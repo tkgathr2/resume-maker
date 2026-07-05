@@ -12,59 +12,105 @@
   },
   "signin": {
     "title": "Welcome to Resume Maker",
-    "subtitle": "Please sign in with your Google account",
+    "subtitle": "Staff sign-in (Google account)",
     "googleButton": "Sign in with Google",
-    "note": "By signing in you agree to the terms of service."
+    "note": "Staff only. Applicants: please open the URL sent by our staff."
+  },
+  "a": {
+    "upload": {
+      "title": "Take a photo of your Residence Card",
+      "hint": "Make sure the whole front side of the card is visible",
+      "takePhoto": "Take photo / Upload",
+      "retake": "Retake",
+      "uploaded": "Uploaded",
+      "processingNote": "Check the photo, then tap Next"
+    },
+    "loading": {
+      "title": "Reading your card...",
+      "subtitle": "Please wait a few seconds"
+    },
+    "ocrFailed": "We could not read the card. Please enter your information manually.",
+    "form": {
+      "title": "Check your information",
+      "subtitle": "We filled in the fields from your card. Fix any mistakes and fill in the rest.",
+      "lowConfidence": "Please double-check this field — it may not have been read correctly.",
+      "validationRequired": "This field is required",
+      "saved": "Saved"
+    },
+    "done": {
+      "title": "Submitted successfully",
+      "message": "Thank you! Our staff will review your information and finish your resume. You can close this page."
+    },
+    "expired": {
+      "title": "This link has expired",
+      "message": "Please ask our staff to send you a new link."
+    },
+    "submitted": {
+      "title": "Already submitted",
+      "message": "If you need to make changes, please contact our staff."
+    }
   },
   "form": {
-    "title": "Enter Resume Information",
-    "subtitle": "Please fill in the fields below",
     "fields": {
-      "fullName": "Full Name",
-      "birthDate": "Date of Birth",
+      "fullName": "Full name",
+      "furigana": "Furigana (Katakana)",
+      "birthDate": "Date of birth",
+      "gender": "Gender",
+      "nationality": "Nationality",
       "address": "Address",
-      "phone": "Phone Number",
-      "email": "Email Address",
+      "phone": "Phone number",
+      "email": "Email",
+      "visaStatus": "Status of residence",
+      "visaExpiry": "Period of stay (expiry)",
       "education": "Education",
-      "workHistory": "Work History",
-      "motivation": "Motivation"
+      "workHistory": "Work history",
+      "qualifications": "Licenses / Qualifications",
+      "motivation": "Motivation / Self-appeal"
     },
     "placeholders": {
-      "fullName": "Taro Yamada",
-      "birthDate": "1990-01-01",
-      "address": "Shibuya, Tokyo...",
-      "phone": "+81-90-1234-5678",
-      "email": "taro@example.com",
-      "education": "B.A. in ... from ... University",
-      "workHistory": "Sales Dept, ABC Inc. (2015-2020)",
-      "motivation": "I am applying because I am drawn to your..."
-    },
-    "preview": "See Preview",
-    "validationRequired": "This field is required"
-  },
-  "preview": {
-    "title": "Resume Preview",
-    "subtitle": "Please review your input",
-    "empty": "No data to display. Please fill in the form first.",
-    "edit": "Back to edit",
-    "print": "Print / Save as PDF"
+      "fullName": "NGUYEN VAN A",
+      "furigana": "グエン バン アー",
+      "birthDate": "2000-01-01",
+      "gender": "Male / Female",
+      "nationality": "Vietnam",
+      "address": "Okayama City, Okayama...",
+      "phone": "090-1234-5678",
+      "email": "example@gmail.com",
+      "visaStatus": "Specified Skilled Worker (i)",
+      "visaExpiry": "2027-01-01",
+      "education": "XX High School, graduated 2018",
+      "workHistory": "XX Company (2019-2023), job description",
+      "qualifications": "JLPT N3 (2022)",
+      "motivation": "I am..."
+    }
   },
   "admin": {
-    "title": "CS Admin Dashboard",
-    "subtitle": "Applicant list and generation status",
+    "title": "Resume Maker Admin",
+    "subtitle": "Register applicants, issue invite URLs, review submissions",
+    "newApplicant": "Register new applicant",
+    "namePlaceholder": "Display name (e.g. Nguyen-san)",
+    "create": "Register & issue URL",
+    "copyUrl": "Copy URL",
+    "copied": "Copied",
     "columns": {
       "name": "Name",
-      "email": "Email",
-      "language": "Language",
       "status": "Status",
-      "updatedAt": "Updated"
+      "language": "Language",
+      "submittedAt": "Submitted",
+      "createdAt": "Created"
     },
     "status": {
-      "pending": "Pending",
-      "generating": "Generating",
-      "completed": "Completed",
-      "failed": "Failed"
+      "invited": "Invited",
+      "opened": "Opened",
+      "card_uploaded": "Card read",
+      "submitted": "Submitted",
+      "completed": "Completed"
     },
+    "workAlert": "⚠ Work restriction: ",
+    "workForbidden": "Work not permitted",
+    "detail": "Detail",
+    "pdf": "Resume PDF",
+    "reissue": "Reissue URL",
     "empty": "No applicants yet."
   }
 }

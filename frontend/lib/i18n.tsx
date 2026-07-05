@@ -4,18 +4,20 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import ja from '@/locales/ja.json';
 import en from '@/locales/en.json';
 import ne from '@/locales/ne.json';
+import vi from '@/locales/vi.json';
 
-export type Locale = 'ja' | 'ne' | 'en';
+export type Locale = 'ja' | 'ne' | 'en' | 'vi';
 
-export const LOCALES: Locale[] = ['ja', 'ne', 'en'];
+export const LOCALES: Locale[] = ['ja', 'ne', 'en', 'vi'];
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   ja: '日本語',
   ne: 'नेपाली',
   en: 'English',
+  vi: 'Tiếng Việt',
 };
 
-const DICTS: Record<Locale, Record<string, unknown>> = { ja, en, ne };
+const DICTS: Record<Locale, Record<string, unknown>> = { ja, en, ne, vi };
 
 const STORAGE_KEY = 'resume-maker.locale';
 const DEFAULT_LOCALE: Locale = 'ja';
