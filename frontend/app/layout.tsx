@@ -4,7 +4,7 @@ import './globals.css';
 import Providers from './providers';
 
 export const metadata: Metadata = {
-  title: 'Resume Maker',
+  title: '履歴書メーカー',
   description: 'AI-assisted resume and CV builder',
   icons: {
     icon: '/favicon.svg',
