@@ -1,0 +1,70 @@
+{
+  "common": {
+    "appName": "履歴書メーカー",
+    "language": "言語",
+    "signOut": "ログアウト",
+    "loading": "読み込み中...",
+    "next": "次へ",
+    "back": "戻る",
+    "submit": "送信",
+    "save": "保存",
+    "required": "必須"
+  },
+  "signin": {
+    "title": "履歴書メーカーへようこそ",
+    "subtitle": "Google アカウントでログインしてください",
+    "googleButton": "Google でログイン",
+    "note": "ログインすると利用規約に同意したものとみなされます。"
+  },
+  "form": {
+    "title": "履歴書情報の入力",
+    "subtitle": "以下の項目を入力してください",
+    "fields": {
+      "fullName": "氏名",
+      "birthDate": "生年月日",
+      "address": "住所",
+      "phone": "電話番号",
+      "email": "メールアドレス",
+      "education": "学歴",
+      "workHistory": "職歴",
+      "motivation": "志望動機"
+    },
+    "placeholders": {
+      "fullName": "山田 太郎",
+      "birthDate": "1990-01-01",
+      "address": "東京都渋谷区...",
+      "phone": "090-1234-5678",
+      "email": "taro@example.com",
+      "education": "○○大学 △△学部 卒業",
+      "workHistory": "株式会社○○ 営業部 (2015-2020)",
+      "motivation": "貴社の...に魅力を感じ志望いたしました。"
+    },
+    "preview": "プレビューを見る",
+    "validationRequired": "この項目は必須です"
+  },
+  "preview": {
+    "title": "履歴書プレビュー",
+    "subtitle": "入力内容を確認してください",
+    "empty": "表示するデータがありません。フォームから入力してください。",
+    "edit": "編集に戻る",
+    "print": "印刷 / PDF 保存"
+  },
+  "admin": {
+    "title": "CS 管理画面",
+    "subtitle": "応募者一覧と生成ステータス",
+    "columns": {
+      "name": "氏名",
+      "email": "メールアドレス",
+      "language": "言語",
+      "status": "生成ステータス",
+      "updatedAt": "更新日時"
+    },
+    "status": {
+      "pending": "未生成",
+      "generating": "生成中",
+      "completed": "生成完了",
+      "failed": "失敗"
+    },
+    "empty": "応募者がいません。"
+  }
+}

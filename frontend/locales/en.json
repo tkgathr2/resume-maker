@@ -1,0 +1,70 @@
+{
+  "common": {
+    "appName": "Resume Maker",
+    "language": "Language",
+    "signOut": "Sign out",
+    "loading": "Loading...",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit",
+    "save": "Save",
+    "required": "Required"
+  },
+  "signin": {
+    "title": "Welcome to Resume Maker",
+    "subtitle": "Please sign in with your Google account",
+    "googleButton": "Sign in with Google",
+    "note": "By signing in you agree to the terms of service."
+  },
+  "form": {
+    "title": "Enter Resume Information",
+    "subtitle": "Please fill in the fields below",
+    "fields": {
+      "fullName": "Full Name",
+      "birthDate": "Date of Birth",
+      "address": "Address",
+      "phone": "Phone Number",
+      "email": "Email Address",
+      "education": "Education",
+      "workHistory": "Work History",
+      "motivation": "Motivation"
+    },
+    "placeholders": {
+      "fullName": "Taro Yamada",
+      "birthDate": "1990-01-01",
+      "address": "Shibuya, Tokyo...",
+      "phone": "+81-90-1234-5678",
+      "email": "taro@example.com",
+      "education": "B.A. in ... from ... University",
+      "workHistory": "Sales Dept, ABC Inc. (2015-2020)",
+      "motivation": "I am applying because I am drawn to your..."
+    },
+    "preview": "See Preview",
+    "validationRequired": "This field is required"
+  },
+  "preview": {
+    "title": "Resume Preview",
+    "subtitle": "Please review your input",
+    "empty": "No data to display. Please fill in the form first.",
+    "edit": "Back to edit",
+    "print": "Print / Save as PDF"
+  },
+  "admin": {
+    "title": "CS Admin Dashboard",
+    "subtitle": "Applicant list and generation status",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "language": "Language",
+      "status": "Status",
+      "updatedAt": "Updated"
+    },
+    "status": {
+      "pending": "Pending",
+      "generating": "Generating",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "empty": "No applicants yet."
+  }
+}
