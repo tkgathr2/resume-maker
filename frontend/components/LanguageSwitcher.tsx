@@ -11,7 +11,7 @@ export default function LanguageSwitcher() {
           key={l}
           type="button"
           onClick={() => setLocale(l)}
-          className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+          className={`px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
             locale === l ? 'bg-brand text-white' : 'text-gray-600 hover:bg-gray-100'
           }`}
           aria-pressed={locale === l}

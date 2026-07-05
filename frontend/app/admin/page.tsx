@@ -74,44 +74,46 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
+    <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">{t('admin.title')}</h1>
         <LanguageSwitcher />
       </div>
-      <p className="text-gray-500 mb-6">{t('admin.subtitle')}</p>
+      <p className="text-gray-500 text-sm sm:text-base mb-6">{t('admin.subtitle')}</p>
 
       {/* 新規登録 */}
-      <form onSubmit={create} className="bg-white rounded-2xl shadow-md p-5 mb-6 flex flex-wrap items-end gap-3">
-        <div className="flex-1 min-w-52">
-          <label className="block text-sm font-semibold mb-1">{t('admin.newApplicant')}</label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('admin.namePlaceholder')}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold mb-1">{t('admin.columns.language')}</label>
-          <select
-            value={locale}
-            onChange={(e) => setLocale(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2"
+      <form onSubmit={create} className="bg-white rounded-2xl shadow-md p-4 md:p-5 mb-6 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
+          <div className="flex-1">
+            <label className="block text-sm font-semibold mb-1">{t('admin.newApplicant')}</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('admin.namePlaceholder')}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand text-sm"
+            />
+          </div>
+          <div className="w-full sm:w-auto">
+            <label className="block text-sm font-semibold mb-1">{t('admin.columns.language')}</label>
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value)}
+              className="w-full sm:w-auto rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
+            >
+              <option value="ja">日本語</option>
+              <option value="ne">नेपाली</option>
+              <option value="en">English</option>
+              <option value="vi">Tiếng Việt</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            disabled={creating || !name.trim()}
+            className="w-full sm:w-auto rounded-lg bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-semibold px-4 sm:px-6 py-2.5 text-sm"
           >
-            <option value="ja">日本語</option>
-            <option value="ne">नेपाली</option>
-            <option value="en">English</option>
-            <option value="vi">Tiếng Việt</option>
-          </select>
+            {t('admin.create')}
+          </button>
         </div>
-        <button
-          type="submit"
-          disabled={creating || !name.trim()}
-          className="rounded-lg bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-semibold px-6 py-2.5"
-        >
-          {t('admin.create')}
-        </button>
         {issuedUrl && (
           <div className="w-full flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
             <code className="text-xs break-all flex-1">{issuedUrl}</code>
@@ -123,53 +125,99 @@ export default function AdminPage() {
       </form>
 
       {/* 一覧 */}
-      <div className="bg-white rounded-2xl shadow-md overflow-x-auto">
-        {loading ? (
-          <p className="p-6 text-gray-400">{t('common.loading')}</p>
-        ) : rows.length === 0 ? (
-          <p className="p-6 text-gray-400">{t('admin.empty')}</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-200">
-                <th className="px-4 py-3">{t('admin.columns.name')}</th>
-                <th className="px-4 py-3">{t('admin.columns.status')}</th>
-                <th className="px-4 py-3">{t('admin.columns.language')}</th>
-                <th className="px-4 py-3">{t('admin.columns.submittedAt')}</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">
-                    {r.displayName}
-                    {r.workRestriction?.includes('不可') && (
-                      <span className="ml-2 text-xs bg-red-600 text-white rounded px-1.5 py-0.5">
-                        {t('admin.workForbidden')}
+      {loading ? (
+        <div className="bg-white rounded-2xl shadow-md p-6">
+          <p className="text-gray-400 text-sm">{t('common.loading')}</p>
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-md p-6">
+          <p className="text-gray-400 text-sm">{t('admin.empty')}</p>
+        </div>
+      ) : (
+        <>
+          {/* テーブル（デスクトップ） */}
+          <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 border-b border-gray-200">
+                  <th className="px-4 py-3">{t('admin.columns.name')}</th>
+                  <th className="px-4 py-3">{t('admin.columns.status')}</th>
+                  <th className="px-4 py-3">{t('admin.columns.language')}</th>
+                  <th className="px-4 py-3">{t('admin.columns.submittedAt')}</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                    <td className="px-4 py-3 font-semibold">
+                      {r.displayName}
+                      {r.workRestriction?.includes('不可') && (
+                        <span className="ml-2 text-xs bg-red-600 text-white rounded px-1.5 py-0.5">
+                          {t('admin.workForbidden')}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_COLOR[r.status] ?? ''}`}>
+                        {t(`admin.status.${r.status}`)}
                       </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_COLOR[r.status] ?? ''}`}>
+                    </td>
+                    <td className="px-4 py-3">{r.locale}</td>
+                    <td className="px-4 py-3 text-gray-500 text-sm">
+                      {r.submittedAt ? new Date(r.submittedAt).toLocaleString('ja-JP') : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link href={`/admin/${r.id}`} className="text-brand font-semibold hover:underline text-sm">
+                        {t('admin.detail')} →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* カード（モバイル） */}
+          <div className="md:hidden space-y-3">
+            {rows.map((r) => (
+              <div key={r.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div>
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      {r.displayName}
+                      {r.workRestriction?.includes('不可') && (
+                        <span className="text-xs bg-red-600 text-white rounded px-1.5 py-0.5">
+                          {t('admin.workForbidden')}
+                        </span>
+                      )}
+                    </h3>
+                  </div>
+                  <Link href={`/admin/${r.id}`} className="text-brand font-semibold text-sm shrink-0 hover:underline">
+                    {t('admin.detail')} →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <p className="text-gray-500">{t('admin.columns.status')}</p>
+                    <span className={`inline-block rounded-full px-2 py-1 text-xs font-semibold mt-1 ${STATUS_COLOR[r.status] ?? ''}`}>
                       {t(`admin.status.${r.status}`)}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">{r.locale}</td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {r.submittedAt ? new Date(r.submittedAt).toLocaleString('ja-JP') : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link href={`/admin/${r.id}`} className="text-brand font-semibold hover:underline">
-                      {t('admin.detail')} →
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">{t('admin.columns.language')}</p>
+                    <p className="mt-1 font-medium">{r.locale}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-gray-500">{t('admin.columns.submittedAt')}</p>
+                    <p className="mt-1 text-gray-600">{r.submittedAt ? new Date(r.submittedAt).toLocaleString('ja-JP') : '—'}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </main>
   );
 }
