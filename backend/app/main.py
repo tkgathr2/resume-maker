@@ -1,12 +1,15 @@
 """FastAPI Entry Point"""
 
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
 
-# Import routers (will be added in W1-W2)
-# from app.routers import auth, resume, ai, integrations
+from app.routers import admin, ai, auth, resume
+
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,11 +57,19 @@ async def root():
         "openapi": "/openapi.json",
     }
 
-# TODO: Register routers
-# app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
-# app.include_router(resume.router, prefix="/resume", tags=["Resume"])
-# app.include_router(ai.router, prefix="/ai", tags=["AI Generation"])
-# app.include_router(integrations.router, prefix="/integrations", tags=["Integrations"])
+
+# Generic exception handler: return a uniform 500 without leaking internals.
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled error on %s %s: %s", request.method, request.url, exc)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
+
+# Register routers
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(resume.router, prefix="/resumes", tags=["Resume"])
+app.include_router(ai.router, prefix="/ai", tags=["AI Review"])
+app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 
 if __name__ == "__main__":
     import uvicorn

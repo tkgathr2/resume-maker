@@ -15,6 +15,10 @@ class Settings(BaseSettings):
 
     # API Keys
     openai_api_key: str
+    # Anthropic Claude key (used for Haiku résumé review). Distinct from the
+    # misleadingly-named `openai_api_key` above. Optional so the server can boot
+    # without it; only fails at call time in utils/claude.py.
+    claude_api_key: Optional[str] = None
 
     # Security
     jwt_secret: str = "your-secret-key-change-in-production"
