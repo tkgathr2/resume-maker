@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Resume Maker",
+    "language": "Ngôn ngữ",
+    "signOut": "Đăng xuất",
+    "loading": "Đang tải...",
+    "next": "Tiếp theo",
+    "back": "Quay lại",
+    "submit": "Gửi",
+    "save": "Lưu",
+    "required": "Bắt buộc"
+  },
+  "signin": {
+    "title": "Chào mừng đến Resume Maker",
+    "subtitle": "Đăng nhập dành cho nhân viên (tài khoản Google)",
+    "googleButton": "Đăng nhập bằng Google",
+    "note": "Chỉ dành cho nhân viên. Ứng viên vui lòng mở URL do nhân viên gửi."
+  },
+  "a": {
+    "upload": {
+      "title": "Chụp ảnh Thẻ cư trú (在留カード) của bạn",
+      "hint": "Chụp sao cho thấy rõ toàn bộ mặt trước của thẻ",
+      "takePhoto": "Chụp ảnh / Tải lên",
+      "retake": "Chụp lại",
+      "uploaded": "Đã tải lên",
+      "processingNote": "Kiểm tra ảnh rồi bấm「Tiếp theo」"
+    },
+    "loading": {
+      "title": "Đang đọc thẻ của bạn...",
+      "subtitle": "Vui lòng chờ vài giây"
+    },
+    "ocrFailed": "Không đọc được thẻ. Vui lòng tự nhập thông tin của bạn.",
+    "form": {
+      "title": "Kiểm tra thông tin của bạn",
+      "subtitle": "Đã tự động điền từ thẻ. Hãy sửa nếu sai và điền các mục còn lại.",
+      "lowConfidence": "Mục này có thể đọc chưa chính xác — hãy kiểm tra kỹ.",
+      "validationRequired": "Mục này là bắt buộc",
+      "saved": "Đã lưu"
+    },
+    "done": {
+      "title": "Đã gửi thành công",
+      "message": "Cảm ơn bạn! Nhân viên sẽ kiểm tra và hoàn thiện hồ sơ của bạn. Bạn có thể đóng trang này."
+    },
+    "expired": {
+      "title": "Liên kết này đã hết hạn",
+      "message": "Vui lòng nhờ nhân viên gửi liên kết mới."
+    },
+    "submitted": {
+      "title": "Đã gửi rồi",
+      "message": "Nếu cần sửa, vui lòng liên hệ nhân viên."
+    }
+  },
+  "form": {
+    "fields": {
+      "fullName": "Họ và tên",
+      "furigana": "Furigana (Katakana)",
+      "birthDate": "Ngày sinh",
+      "gender": "Giới tính",
+      "nationality": "Quốc tịch",
+      "address": "Địa chỉ",
+      "phone": "Số điện thoại",
+      "email": "Email",
+      "visaStatus": "Tư cách lưu trú (在留資格)",
+      "visaExpiry": "Thời hạn lưu trú",
+      "education": "Học vấn",
+      "workHistory": "Kinh nghiệm làm việc",
+      "qualifications": "Bằng cấp / Chứng chỉ",
+      "motivation": "Nguyện vọng / Giới thiệu bản thân"
+    },
+    "placeholders": {
+      "fullName": "NGUYEN VAN A",
+      "furigana": "グエン バン アー",
+      "birthDate": "2000-01-01",
+      "gender": "Nam / Nữ",
+      "nationality": "Việt Nam",
+      "address": "Okayama City...",
+      "phone": "090-1234-5678",
+      "email": "example@gmail.com",
+      "visaStatus": "特定技能1号",
+      "visaExpiry": "2027-01-01",
+      "education": "Tốt nghiệp THPT XX (2018)",
+      "workHistory": "Công ty XX (2019-2023), nội dung công việc",
+      "qualifications": "JLPT N3 (2022)",
+      "motivation": "Tôi..."
+    }
+  },
+  "admin": {
+    "title": "Resume Maker Admin",
+    "subtitle": "Register applicants, issue invite URLs, review submissions",
+    "newApplicant": "Register new applicant",
+    "namePlaceholder": "Display name (e.g. Nguyen-san)",
+    "create": "Register & issue URL",
+    "copyUrl": "Copy URL",
+    "copied": "Copied",
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "language": "Language",
+      "submittedAt": "Submitted",
+      "createdAt": "Created"
+    },
+    "status": {
+      "invited": "Invited",
+      "opened": "Opened",
+      "card_uploaded": "Card read",
+      "submitted": "Submitted",
+      "completed": "Completed"
+    },
+    "workAlert": "⚠ Work restriction: ",
+    "workForbidden": "Work not permitted",
+    "detail": "Detail",
+    "pdf": "Resume PDF",
+    "reissue": "Reissue URL",
+    "empty": "No applicants yet."
+  }
+}

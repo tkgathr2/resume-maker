@@ -1,8 +1,7 @@
 import { auth } from '@/auth';
 
-// Auth guard (NextAuth v5). Unauthenticated users hitting a protected route are
-// redirected to /auth/signin. The /auth/* pages themselves are excluded so the
-// sign-in flow remains reachable while logged out.
+// スタッフ領域（/admin・トップ）のみ認証ガード。
+// 求職者のトークンページ（/a/*）とそのAPI（/api/a/*）はログイン不要。
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isAuthRoute = pathname.startsWith('/auth');
@@ -15,8 +14,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Run on everything except NextAuth API routes, Next internals, and static files.
-  // /auth/* IS matched (so logged-in users could be bounced away later if desired),
-  // but the callback above lets unauthenticated users through to /auth/*.
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.svg|favicon.ico|locales|.*\\..*).*)'],
+  // ガード対象: / と /admin/** のみ。/a/**・/api/** は対象外
+  // （/api/admin/* は requireStaff() がアプリ層で401を返す）。
+  matcher: ['/', '/admin/:path*'],
 };

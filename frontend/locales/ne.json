@@ -1,70 +1,116 @@
 {
   "common": {
-    "appName": "बायोडाटा मेकर",
+    "appName": "रिज्युमे मेकर",
     "language": "भाषा",
     "signOut": "साइन आउट",
     "loading": "लोड हुँदैछ...",
     "next": "अर्को",
     "back": "पछाडि",
     "submit": "पेश गर्नुहोस्",
-    "save": "सुरक्षित गर्नुहोस्",
+    "save": "सेभ",
     "required": "आवश्यक"
   },
   "signin": {
-    "title": "बायोडाटा मेकरमा स्वागत छ",
-    "subtitle": "कृपया आफ्नो Google खाताबाट साइन इन गर्नुहोस्",
-    "googleButton": "Google बाट साइन इन गर्नुहोस्",
-    "note": "साइन इन गरेर तपाईं सेवाका सर्तहरूमा सहमत हुनुहुन्छ।"
+    "title": "रिज्युमे मेकरमा स्वागत छ",
+    "subtitle": "स्टाफ लगइन (Google खाता)",
+    "googleButton": "Google बाट लगइन",
+    "note": "स्टाफ मात्र। आवेदकहरूले स्टाफले पठाएको URL खोल्नुहोस्।"
+  },
+  "a": {
+    "upload": {
+      "title": "आफ्नो जाइर्यु कार्ड (在留カード) को फोटो खिच्नुहोस्",
+      "hint": "कार्डको अगाडिको भाग पूरै देखिने गरी खिच्नुहोस्",
+      "takePhoto": "फोटो खिच्नुहोस् / अपलोड",
+      "retake": "फेरि खिच्नुहोस्",
+      "uploaded": "अपलोड भयो",
+      "processingNote": "फोटो जाँचेर「अर्को」थिच्नुहोस्"
+    },
+    "loading": {
+      "title": "कार्ड पढ्दैछौं...",
+      "subtitle": "केही सेकेन्ड पर्खनुहोस्"
+    },
+    "ocrFailed": "कार्ड पढ्न सकिएन। कृपया आफ्नो जानकारी आफैं लेख्नुहोस्।",
+    "form": {
+      "title": "आफ्नो जानकारी जाँच्नुहोस्",
+      "subtitle": "कार्डबाट स्वतः भरिएको छ। गल्ती भए सच्याउनुहोस् र बाँकी भर्नुहोस्।",
+      "lowConfidence": "यो फिल्ड राम्ररी पढिएन होला — पक्का जाँच्नुहोस्।",
+      "validationRequired": "यो फिल्ड आवश्यक छ",
+      "saved": "सेभ भयो"
+    },
+    "done": {
+      "title": "सफलतापूर्वक पेश भयो",
+      "message": "धन्यवाद! हाम्रो स्टाफले जाँचेर तपाईंको रिज्युमे तयार गर्नेछ। यो पेज बन्द गर्न सक्नुहुन्छ।"
+    },
+    "expired": {
+      "title": "यो लिंकको म्याद सकियो",
+      "message": "कृपया स्टाफलाई नयाँ लिंक पठाउन भन्नुहोस्।"
+    },
+    "submitted": {
+      "title": "पहिले नै पेश भइसकेको छ",
+      "message": "परिवर्तन गर्नुपरे स्टाफलाई सम्पर्क गर्नुहोस्।"
+    }
   },
   "form": {
-    "title": "बायोडाटा जानकारी प्रविष्ट गर्नुहोस्",
-    "subtitle": "कृपया तलका फिल्डहरू भर्नुहोस्",
     "fields": {
       "fullName": "पूरा नाम",
+      "furigana": "फुरिगाना (काताकाना)",
       "birthDate": "जन्म मिति",
+      "gender": "लिङ्ग",
+      "nationality": "राष्ट्रियता",
       "address": "ठेगाना",
       "phone": "फोन नम्बर",
-      "email": "इमेल ठेगाना",
+      "email": "इमेल",
+      "visaStatus": "बसोबास स्थिति (在留資格)",
+      "visaExpiry": "बसाइ अवधि (म्याद)",
       "education": "शिक्षा",
-      "workHistory": "कार्य अनुभव",
-      "motivation": "आवेदनको कारण"
+      "workHistory": "कामको अनुभव",
+      "qualifications": "लाइसेन्स / योग्यता",
+      "motivation": "प्रेरणा / आत्म-परिचय"
     },
     "placeholders": {
-      "fullName": "टारो यामादा",
-      "birthDate": "1990-01-01",
-      "address": "शिबुया, टोकियो...",
-      "phone": "+81-90-1234-5678",
-      "email": "taro@example.com",
-      "education": "... विश्वविद्यालयबाट स्नातक",
-      "workHistory": "ABC कम्पनी, बिक्री विभाग (2015-2020)",
-      "motivation": "म आवेदन दिन्छु किनभने..."
-    },
-    "preview": "पूर्वावलोकन हेर्नुहोस्",
-    "validationRequired": "यो फिल्ड आवश्यक छ"
-  },
-  "preview": {
-    "title": "बायोडाटा पूर्वावलोकन",
-    "subtitle": "कृपया आफ्नो प्रविष्टि समीक्षा गर्नुहोस्",
-    "empty": "देखाउने डाटा छैन। पहिले फारम भर्नुहोस्।",
-    "edit": "सम्पादनमा फर्कनुहोस्",
-    "print": "प्रिन्ट / PDF सुरक्षित गर्नुहोस्"
+      "fullName": "GURUNG BIBEK",
+      "furigana": "グルン ビベク",
+      "birthDate": "2000-01-01",
+      "gender": "पुरुष / महिला",
+      "nationality": "नेपाल",
+      "address": "Okayama City...",
+      "phone": "090-1234-5678",
+      "email": "example@gmail.com",
+      "visaStatus": "特定技能1号",
+      "visaExpiry": "2027-01-01",
+      "education": "XX हाई स्कूल, 2018 मा स्नातक",
+      "workHistory": "XX कम्पनी (2019-2023), कामको विवरण",
+      "qualifications": "JLPT N3 (2022)",
+      "motivation": "म..."
+    }
   },
   "admin": {
-    "title": "CS प्रशासन ड्यासबोर्ड",
-    "subtitle": "आवेदक सूची र उत्पादन स्थिति",
+    "title": "Resume Maker Admin",
+    "subtitle": "Register applicants, issue invite URLs, review submissions",
+    "newApplicant": "Register new applicant",
+    "namePlaceholder": "Display name (e.g. Nguyen-san)",
+    "create": "Register & issue URL",
+    "copyUrl": "Copy URL",
+    "copied": "Copied",
     "columns": {
-      "name": "नाम",
-      "email": "इमेल",
-      "language": "भाषा",
-      "status": "स्थिति",
-      "updatedAt": "अद्यावधिक"
+      "name": "Name",
+      "status": "Status",
+      "language": "Language",
+      "submittedAt": "Submitted",
+      "createdAt": "Created"
     },
     "status": {
-      "pending": "बाँकी",
-      "generating": "उत्पादन हुँदैछ",
-      "completed": "सम्पन्न",
-      "failed": "असफल"
+      "invited": "Invited",
+      "opened": "Opened",
+      "card_uploaded": "Card read",
+      "submitted": "Submitted",
+      "completed": "Completed"
     },
-    "empty": "अहिलेसम्म कुनै आवेदक छैन।"
+    "workAlert": "⚠ Work restriction: ",
+    "workForbidden": "Work not permitted",
+    "detail": "Detail",
+    "pdf": "Resume PDF",
+    "reissue": "Reissue URL",
+    "empty": "No applicants yet."
   }
 }

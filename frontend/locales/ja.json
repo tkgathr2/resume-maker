@@ -6,65 +6,111 @@
     "loading": "読み込み中...",
     "next": "次へ",
     "back": "戻る",
-    "submit": "送信",
+    "submit": "送信する",
     "save": "保存",
     "required": "必須"
   },
   "signin": {
     "title": "履歴書メーカーへようこそ",
-    "subtitle": "Google アカウントでログインしてください",
+    "subtitle": "スタッフ用ログイン（Google アカウント）",
     "googleButton": "Google でログイン",
-    "note": "ログインすると利用規約に同意したものとみなされます。"
+    "note": "スタッフ以外はログインできません。求職者の方はスタッフから届いたURLを開いてください。"
+  },
+  "a": {
+    "upload": {
+      "title": "在留カードを撮影してください",
+      "hint": "カードの表面全体が写るように撮影してください",
+      "takePhoto": "カードを撮影 / アップロード",
+      "retake": "撮り直す",
+      "uploaded": "アップロードしました",
+      "processingNote": "写真を確認したら「次へ」を押してください"
+    },
+    "loading": {
+      "title": "カードを読み取っています...",
+      "subtitle": "そのままお待ちください（数秒で終わります）"
+    },
+    "ocrFailed": "カードを読み取れませんでした。お手数ですが手で入力してください。",
+    "form": {
+      "title": "内容を確認してください",
+      "subtitle": "カードから自動入力しました。間違いがあれば直して、残りの項目を入力してください。",
+      "lowConfidence": "この項目は読み取りに自信がありません。必ず確認してください。",
+      "validationRequired": "この項目は必須です",
+      "saved": "保存しました"
+    },
+    "done": {
+      "title": "送信が完了しました",
+      "message": "ありがとうございました。担当スタッフが内容を確認して履歴書を仕上げます。この画面は閉じて大丈夫です。"
+    },
+    "expired": {
+      "title": "このリンクは有効期限が切れています",
+      "message": "お手数ですが、担当スタッフに新しいリンクを送ってもらってください。"
+    },
+    "submitted": {
+      "title": "すでに送信済みです",
+      "message": "修正したい場合は担当スタッフに連絡してください。"
+    }
   },
   "form": {
-    "title": "履歴書情報の入力",
-    "subtitle": "以下の項目を入力してください",
     "fields": {
       "fullName": "氏名",
+      "furigana": "ふりがな（カタカナ）",
       "birthDate": "生年月日",
+      "gender": "性別",
+      "nationality": "国籍",
       "address": "住所",
       "phone": "電話番号",
       "email": "メールアドレス",
+      "visaStatus": "在留資格",
+      "visaExpiry": "在留期限",
       "education": "学歴",
       "workHistory": "職歴",
-      "motivation": "志望動機"
+      "qualifications": "免許・資格",
+      "motivation": "志望動機・アピール"
     },
     "placeholders": {
-      "fullName": "山田 太郎",
-      "birthDate": "1990-01-01",
-      "address": "東京都渋谷区...",
+      "fullName": "NGUYEN VAN A",
+      "furigana": "グエン バン アー",
+      "birthDate": "2000-01-01",
+      "gender": "男 / 女",
+      "nationality": "ベトナム",
+      "address": "岡山県岡山市...",
       "phone": "090-1234-5678",
-      "email": "taro@example.com",
-      "education": "○○大学 △△学部 卒業",
-      "workHistory": "株式会社○○ 営業部 (2015-2020)",
-      "motivation": "貴社の...に魅力を感じ志望いたしました。"
-    },
-    "preview": "プレビューを見る",
-    "validationRequired": "この項目は必須です"
-  },
-  "preview": {
-    "title": "履歴書プレビュー",
-    "subtitle": "入力内容を確認してください",
-    "empty": "表示するデータがありません。フォームから入力してください。",
-    "edit": "編集に戻る",
-    "print": "印刷 / PDF 保存"
+      "email": "example@gmail.com",
+      "visaStatus": "特定技能1号",
+      "visaExpiry": "2027-01-01",
+      "education": "○○高校 卒業（2018年）",
+      "workHistory": "○○株式会社（2019-2023）仕事の内容",
+      "qualifications": "日本語能力試験 N3（2022年）",
+      "motivation": "私は..."
+    }
   },
   "admin": {
-    "title": "CS 管理画面",
-    "subtitle": "応募者一覧と生成ステータス",
+    "title": "履歴書メーカー 管理画面",
+    "subtitle": "求職者の登録・招待URL発行・提出確認",
+    "newApplicant": "新しい求職者を登録",
+    "namePlaceholder": "管理用の名前（例: グエンさん）",
+    "create": "登録してURL発行",
+    "copyUrl": "URLをコピー",
+    "copied": "コピーしました",
     "columns": {
-      "name": "氏名",
-      "email": "メールアドレス",
+      "name": "名前",
+      "status": "状態",
       "language": "言語",
-      "status": "生成ステータス",
-      "updatedAt": "更新日時"
+      "submittedAt": "提出日時",
+      "createdAt": "登録日"
     },
     "status": {
-      "pending": "未生成",
-      "generating": "生成中",
-      "completed": "生成完了",
-      "failed": "失敗"
+      "invited": "招待済み（未開封）",
+      "opened": "開封済み",
+      "card_uploaded": "カード読取済み",
+      "submitted": "提出済み",
+      "completed": "完了"
     },
-    "empty": "応募者がいません。"
+    "workAlert": "⚠ 就労制限に注意: ",
+    "workForbidden": "就労不可",
+    "detail": "詳細",
+    "pdf": "履歴書PDF",
+    "reissue": "URL再発行",
+    "empty": "まだ求職者が登録されていません。"
   }
 }

@@ -55,3 +55,8 @@ postgres_data/
 .cache/
 temp/
 *.tmp
+backend/.venv/
+__pycache__/
+*.pyc
+.env
+.env.local

@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 求職者（1人=1招待トークン）。在留カード番号はフル保存しない（下4桁のみ）。
+model Applicant {
+  id              String    @id @default(cuid())
+  displayName     String // スタッフが付ける管理用の名前
+  token           String    @unique
+  tokenExpiresAt  DateTime
+  locale          String    @default("ja")
+  status          String    @default("invited") // invited / opened / card_uploaded / submitted / completed
+  cardImage       Bytes? // AES-256-GCM 暗号化済み JPEG
+  cardImageIv     String?
+  cardUploadedAt  DateTime?
+  ocrStatus       String    @default("none") // none / processing / done / failed
+  ocrResult       Json? // 抽出フィールド + confidence
+  workRestriction String? // 就労制限の有無（"就労不可" はスタッフ画面で赤警告）
+  cardNumberLast4 String?
+  cardExpiryDate  String?
+  ocrCount        Int       @default(0)
+  draft           Json? // 求職者の自動保存下書き
+  submittedData   Json? // 提出確定データ（以降は求職者側読取専用）
+  submittedAt     DateTime?
+  createdBy       String? // スタッフのメール
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  events          AuditEvent[]
+
+  @@index([status])
+}
+
+model AuditEvent {
+  id          String    @id @default(cuid())
+  applicantId String
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  type        String // created / opened / card_uploaded / ocr_done / ocr_failed / submitted / reissued / pdf_downloaded / staff_edited
+  detail      String?
+  createdAt   DateTime  @default(now())
+
+  @@index([applicantId])
+}

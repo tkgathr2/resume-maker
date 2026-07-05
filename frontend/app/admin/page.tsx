@@ -1,110 +1,173 @@
 'use client';
 
+// スタッフ管理画面: 求職者一覧 + 登録・招待URL発行。
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
-type GenStatus = 'pending' | 'generating' | 'completed' | 'failed';
-
-interface Applicant {
+interface Row {
   id: string;
-  name: string;
-  email: string;
-  language: 'ja' | 'ne' | 'en';
-  status: GenStatus;
-  updatedAt: string;
+  displayName: string;
+  status: string;
+  locale: string;
+  ocrStatus: string;
+  workRestriction: string | null;
+  submittedAt: string | null;
+  createdAt: string;
 }
 
-// Placeholder applicant data. In production this comes from the backend
-// (GET /resume list); wire an SWR/fetch call here once the API is live.
-const MOCK_APPLICANTS: Applicant[] = [
-  {
-    id: '1',
-    name: '山田 太郎',
-    email: 'taro@example.com',
-    language: 'ja',
-    status: 'completed',
-    updatedAt: '2026-07-05 10:20',
-  },
-  {
-    id: '2',
-    name: 'Bishnu Thapa',
-    email: 'bishnu@example.com',
-    language: 'ne',
-    status: 'generating',
-    updatedAt: '2026-07-05 10:45',
-  },
-  {
-    id: '3',
-    name: 'John Smith',
-    email: 'john@example.com',
-    language: 'en',
-    status: 'pending',
-    updatedAt: '2026-07-05 09:58',
-  },
-  {
-    id: '4',
-    name: '佐藤 花子',
-    email: 'hanako@example.com',
-    language: 'ja',
-    status: 'failed',
-    updatedAt: '2026-07-05 08:30',
-  },
-];
-
-const STATUS_STYLES: Record<GenStatus, string> = {
-  pending: 'bg-gray-100 text-gray-600',
-  generating: 'bg-blue-100 text-blue-700',
-  completed: 'bg-green-100 text-green-700',
-  failed: 'bg-red-100 text-red-700',
+const STATUS_COLOR: Record<string, string> = {
+  invited: 'bg-gray-100 text-gray-600',
+  opened: 'bg-blue-50 text-blue-600',
+  card_uploaded: 'bg-indigo-50 text-indigo-600',
+  submitted: 'bg-green-50 text-green-700',
+  completed: 'bg-green-600 text-white',
 };
 
-// CS admin dashboard (task: pages/admin.tsx): applicant list + generation status.
 export default function AdminPage() {
   const { t } = useI18n();
-  const applicants = MOCK_APPLICANTS;
+  const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState('');
+  const [locale, setLocale] = useState('ja');
+  const [issuedUrl, setIssuedUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  const reload = useCallback(async () => {
+    const res = await fetch('/api/admin/applicants', { cache: 'no-store' });
+    if (res.ok) {
+      const json = await res.json();
+      setRows(json.applicants ?? []);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setCreating(true);
+    const res = await fetch('/api/admin/applicants', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ displayName: name.trim(), locale }),
+    });
+    setCreating(false);
+    if (res.ok) {
+      const json = await res.json();
+      setIssuedUrl(json.url);
+      setCopied(false);
+      setName('');
+      void reload();
+    }
+  };
+
+  const copy = async () => {
+    if (!issuedUrl) return;
+    await navigator.clipboard.writeText(issuedUrl);
+    setCopied(true);
+  };
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-6">
+    <main className="max-w-5xl mx-auto px-6 py-8">
+      <div className="flex items-center justify-between mb-1">
         <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
         <LanguageSwitcher />
       </div>
       <p className="text-gray-500 mb-6">{t('admin.subtitle')}</p>
 
-      <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-        {applicants.length === 0 ? (
-          <p className="p-8 text-center text-gray-400">{t('admin.empty')}</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-left text-gray-600">
-                  <th className="px-4 py-3 font-semibold">{t('admin.columns.name')}</th>
-                  <th className="px-4 py-3 font-semibold">{t('admin.columns.email')}</th>
-                  <th className="px-4 py-3 font-semibold">{t('admin.columns.language')}</th>
-                  <th className="px-4 py-3 font-semibold">{t('admin.columns.status')}</th>
-                  <th className="px-4 py-3 font-semibold">{t('admin.columns.updatedAt')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {applicants.map((a) => (
-                  <tr key={a.id} className="border-t border-gray-100">
-                    <td className="px-4 py-3 font-medium">{a.name}</td>
-                    <td className="px-4 py-3 text-gray-600">{a.email}</td>
-                    <td className="px-4 py-3 uppercase text-gray-500">{a.language}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${STATUS_STYLES[a.status]}`}
-                      >
-                        {t(`admin.status.${a.status}`)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">{a.updatedAt}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* 新規登録 */}
+      <form onSubmit={create} className="bg-white rounded-2xl shadow-md p-5 mb-6 flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-52">
+          <label className="block text-sm font-semibold mb-1">{t('admin.newApplicant')}</label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t('admin.namePlaceholder')}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold mb-1">{t('admin.columns.language')}</label>
+          <select
+            value={locale}
+            onChange={(e) => setLocale(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2"
+          >
+            <option value="ja">日本語</option>
+            <option value="ne">नेपाली</option>
+            <option value="en">English</option>
+            <option value="vi">Tiếng Việt</option>
+          </select>
+        </div>
+        <button
+          type="submit"
+          disabled={creating || !name.trim()}
+          className="rounded-lg bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-semibold px-6 py-2.5"
+        >
+          {t('admin.create')}
+        </button>
+        {issuedUrl && (
+          <div className="w-full flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+            <code className="text-xs break-all flex-1">{issuedUrl}</code>
+            <button type="button" onClick={copy} className="shrink-0 text-sm font-semibold text-brand">
+              {copied ? `✓ ${t('admin.copied')}` : t('admin.copyUrl')}
+            </button>
           </div>
+        )}
+      </form>
+
+      {/* 一覧 */}
+      <div className="bg-white rounded-2xl shadow-md overflow-x-auto">
+        {loading ? (
+          <p className="p-6 text-gray-400">{t('common.loading')}</p>
+        ) : rows.length === 0 ? (
+          <p className="p-6 text-gray-400">{t('admin.empty')}</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-500 border-b border-gray-200">
+                <th className="px-4 py-3">{t('admin.columns.name')}</th>
+                <th className="px-4 py-3">{t('admin.columns.status')}</th>
+                <th className="px-4 py-3">{t('admin.columns.language')}</th>
+                <th className="px-4 py-3">{t('admin.columns.submittedAt')}</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                  <td className="px-4 py-3 font-semibold">
+                    {r.displayName}
+                    {r.workRestriction?.includes('不可') && (
+                      <span className="ml-2 text-xs bg-red-600 text-white rounded px-1.5 py-0.5">
+                        {t('admin.workForbidden')}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_COLOR[r.status] ?? ''}`}>
+                      {t(`admin.status.${r.status}`)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">{r.locale}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {r.submittedAt ? new Date(r.submittedAt).toLocaleString('ja-JP') : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link href={`/admin/${r.id}`} className="text-brand font-semibold hover:underline">
+                      {t('admin.detail')} →
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </main>
