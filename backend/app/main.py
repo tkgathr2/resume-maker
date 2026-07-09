@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.routers import admin, ai, auth, resume
+from app.routers import admin, ai, auth, resume, generate
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +71,7 @@ app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(resume.router, prefix="/resumes", tags=["Resume"])
 app.include_router(ai.router, prefix="/ai", tags=["AI Review"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+app.include_router(generate.router, prefix="/api/resume", tags=["Resume Generation"])
 
 if __name__ == "__main__":
     import uvicorn

@@ -90,6 +90,27 @@ class ResumeWithReviewOut(BaseModel):
 
 
 # --------------------------------------------------------------------------- #
+# Resume Generation
+# --------------------------------------------------------------------------- #
+class ResumeGenerateRequest(BaseModel):
+    """Request to generate a resume with AI."""
+    title: str
+    content: str  # Raw resume content (text/markdown)
+
+
+class ResumeGenerationOut(BaseModel):
+    """Response from resume generation."""
+    model_config = ConfigDict(from_attributes=True)
+
+    resume_id: int
+    title: str
+    content_json: dict[str, Any]
+    review_text: str
+    status: str
+    created_at: datetime
+
+
+# --------------------------------------------------------------------------- #
 # Job
 # --------------------------------------------------------------------------- #
 class JobCreate(BaseModel):
