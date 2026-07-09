@@ -1,9 +1,26 @@
 """Pydantic v2 request/response schemas."""
 
+import json
 from datetime import datetime
 from typing import Optional, Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+# Max serialized size of a résumé's content_json blob. Guards against
+# oversized payloads (e.g. pasted-in file dumps) bloating the DB/API.
+_MAX_CONTENT_JSON_BYTES = 50_000
+
+# Allowed résumé lifecycle states.
+_RESUME_STATUS_PATTERN = r"^(draft|active|archived)$"
+
+
+def _validate_content_json_size(value: dict[str, Any]) -> dict[str, Any]:
+    size = len(json.dumps(value, ensure_ascii=False))
+    if size > _MAX_CONTENT_JSON_BYTES:
+        raise ValueError(
+            f"content_json exceeds {_MAX_CONTENT_JSON_BYTES} bytes (got {size})"
+        )
+    return value
 
 
 # --------------------------------------------------------------------------- #
@@ -40,15 +57,27 @@ class TokenResponse(BaseModel):
 # Resume
 # --------------------------------------------------------------------------- #
 class ResumeCreate(BaseModel):
-    title: str
-    content_json: dict[str, Any] = {}
-    status: str = "draft"
+    title: str = Field(..., min_length=1, max_length=255)
+    content_json: dict[str, Any] = Field(default_factory=dict)
+    status: str = Field(default="draft", pattern=_RESUME_STATUS_PATTERN)
+
+    @field_validator("content_json")
+    @classmethod
+    def _check_content_json_size(cls, v: dict[str, Any]) -> dict[str, Any]:
+        return _validate_content_json_size(v)
 
 
 class ResumeUpdate(BaseModel):
-    title: Optional[str] = None
+    title: Optional[str] = Field(default=None, min_length=1, max_length=255)
     content_json: Optional[dict[str, Any]] = None
-    status: Optional[str] = None
+    status: Optional[str] = Field(default=None, pattern=_RESUME_STATUS_PATTERN)
+
+    @field_validator("content_json")
+    @classmethod
+    def _check_content_json_size(cls, v: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+        if v is None:
+            return v
+        return _validate_content_json_size(v)
 
 
 class ResumeOut(BaseModel):

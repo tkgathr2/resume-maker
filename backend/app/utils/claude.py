@@ -30,6 +30,9 @@ async def review_resume(content: str) -> str:
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
         )
+        if not response.content:
+            logger.error("Claude API returned an empty response for résumé review")
+            raise ValueError("Claude API returned an empty response")
         return response.content[0].text
     except APITimeoutError as e:
         logger.error("Claude API timeout while reviewing resume: %s", str(e))
@@ -71,6 +74,9 @@ JSON形式で出力してください。"""
             max_tokens=2048,
             messages=[{"role": "user", "content": prompt}],
         )
+        if not response.content:
+            logger.error("Claude API returned an empty response for résumé generation")
+            raise ValueError("Claude API returned an empty response")
         response_text = response.content[0].text
 
         # Extract JSON from response
