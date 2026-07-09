@@ -75,7 +75,7 @@ export default function AdminPage() {
 
   return (
     <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-2 sm:gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold">{t('admin.title')}</h1>
         <LanguageSwitcher />
       </div>
@@ -83,7 +83,7 @@ export default function AdminPage() {
 
       {/* 新規登録 */}
       <form onSubmit={create} className="bg-white rounded-2xl shadow-md p-4 md:p-5 mb-6 flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-end">
           <div className="flex-1">
             <label className="block text-sm font-semibold mb-1">{t('admin.newApplicant')}</label>
             <input
@@ -197,7 +197,7 @@ export default function AdminPage() {
                     {t('admin.detail')} →
                   </Link>
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
                     <p className="text-gray-500">{t('admin.columns.status')}</p>
                     <span className={`inline-block rounded-full px-2 py-1 text-xs font-semibold mt-1 ${STATUS_COLOR[r.status] ?? ''}`}>
