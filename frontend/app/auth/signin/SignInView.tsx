@@ -1,12 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
+import { useToast } from '@/lib/useToast';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import Spinner from '@/components/Spinner';
 
 // Client view for the sign-in screen. Receives a bound server action so the
 // Google OAuth call runs server-side (NextAuth v5).
 export default function SignInView({ signInAction }: { signInAction: () => Promise<void> }) {
   const { t } = useI18n();
+  const { show: showToast } = useToast();
+  const [signing, setSigning] = useState(false);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
@@ -18,11 +23,25 @@ export default function SignInView({ signInAction }: { signInAction: () => Promi
         <h1 className="text-2xl font-bold text-center">{t('signin.title')}</h1>
         <p className="text-gray-500 text-center">{t('signin.subtitle')}</p>
 
-        <form action={signInAction} className="w-full">
+        <form
+          action={async () => {
+            setSigning(true);
+            try {
+              await signInAction();
+            } catch (err) {
+              setSigning(false);
+              showToast(`Sign-in failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
+            }
+          }}
+          className="w-full"
+        >
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-3 rounded-lg bg-brand hover:bg-brand-dark text-white font-semibold py-3 transition-colors"
+            disabled={signing}
+            aria-busy={signing}
+            className="w-full flex items-center justify-center gap-3 rounded-lg bg-brand hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 transition-colors"
           >
+            {signing && <Spinner size="sm" />}
             <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
               <path
                 fill="#FFF"
@@ -30,7 +49,7 @@ export default function SignInView({ signInAction }: { signInAction: () => Promi
                 opacity="0.0"
               />
             </svg>
-            {t('signin.googleButton')}
+            {signing ? t('common.loading') : t('signin.googleButton')}
           </button>
         </form>
 
