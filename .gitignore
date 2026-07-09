@@ -47,6 +47,8 @@ yarn-error.log*
 .pytest_cache/
 .nyc_output/
 coverage/
+playwright-report/
+.auth/
 
 # Docker
 postgres_data/
