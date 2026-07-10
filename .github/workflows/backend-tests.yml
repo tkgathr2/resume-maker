@@ -47,4 +47,4 @@ jobs:
         run: pytest tests/ -v
 
       - name: Verify FastAPI app imports cleanly
-        run: python -c "from app.main import app; print(f'routes: {len(app.routes)}')"
+        run: python -c "from app.main import app; print('routes=' + str(len(app.routes)))"
