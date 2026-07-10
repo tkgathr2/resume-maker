@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expiration_hours: int = 24
     refresh_token_encryption_key: str = "your-encryption-key-min-32-chars"
+    # 在留カード (residence card) field encryption. Any-length string is fine:
+    # a 32-byte AES-256 key is derived from it via SHA-256 (see
+    # app/util/zairyu_encryption.py), matching the refresh-token key pattern.
+    zairyu_encryption_key: str = "zairyu-encryption-key-change-in-production"
 
     # Slack
     slack_webhook_url: Optional[str] = None
