@@ -20,10 +20,12 @@ export function isStaffEmail(email: string): boolean {
 // Env vars fall back to '' so `next build` never throws when secrets are absent;
 // real values are required at run time for actual authentication.
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  basePath: '/api/auth',
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+      allowDangerousEmailAccountLinking: true,
       // Offline access + consent prompt so a refresh token is issued.
       authorization: {
         params: {
