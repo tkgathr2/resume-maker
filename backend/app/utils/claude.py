@@ -6,6 +6,7 @@ import anthropic
 from anthropic import APIError, APITimeoutError, RateLimitError
 
 from app.config import settings
+from app.utils.pii_mask import mask_pii
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,9 @@ async def review_resume(content: str) -> str:
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
         )
+        if not response.content:
+            logger.error("Claude API returned an empty response for résumé review")
+            raise ValueError("Claude API returned an empty response")
         return response.content[0].text
     except APITimeoutError as e:
         logger.error("Claude API timeout while reviewing resume: %s", str(e))
@@ -50,6 +54,10 @@ async def generate_resume(raw_content: str) -> dict:
     if not settings.claude_api_key:
         raise RuntimeError("CLAUDE_API_KEY is not configured")
 
+    # Mask PII (name/phone/address) before it ever reaches the prompt sent
+    # to the external Claude API.
+    masked_content = mask_pii(raw_content)
+
     client = anthropic.AsyncAnthropic(api_key=settings.claude_api_key)
     prompt = f"""以下の内容から構造化された履歴書JSONを生成してください。
 必ずJSON形式で以下のフィールドを含めてください:
@@ -61,7 +69,7 @@ async def generate_resume(raw_content: str) -> dict:
 - experience (経歴リスト)
 
 内容:
-{raw_content}
+{masked_content}
 
 JSON形式で出力してください。"""
 
@@ -71,6 +79,9 @@ JSON形式で出力してください。"""
             max_tokens=2048,
             messages=[{"role": "user", "content": prompt}],
         )
+        if not response.content:
+            logger.error("Claude API returned an empty response for résumé generation")
+            raise ValueError("Claude API returned an empty response")
         response_text = response.content[0].text
 
         # Extract JSON from response

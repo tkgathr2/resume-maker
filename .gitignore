@@ -48,6 +48,7 @@ yarn-error.log*
 .nyc_output/
 coverage/
 playwright-report/
+test-results/
 .auth/
 
 # Docker
