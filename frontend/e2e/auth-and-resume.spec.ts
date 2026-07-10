@@ -1,146 +1,168 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { injectAxe, checkA11y } from 'axe-playwright';
 
 /**
- * E2E Test Suite: OAuth login → Resume form → Submission → Completion
- * Includes accessibility scanning and error scenarios
+ * E2E Test Suite: OAuth login → Resume form → Submission → Completion.
+ *
+ * The applicant flow (`/a/[token]/*`) reads/writes through Next.js API routes
+ * backed by Postgres (see `app/api/a/[token]/*`, `frontend/prisma/schema.prisma`).
+ * CI has no live database, so these tests intercept those same-origin API
+ * calls with `page.route()` and serve deterministic fixtures — the Next.js
+ * route handlers (and Prisma) never execute, keeping the suite fast and
+ * independent of any external service.
  */
 
+const VALID_TOKEN = 'e2e-valid-token-000000000000000000';
+const EXPIRED_TOKEN = 'e2e-expired-token-00000000000000000';
+
+const APPLICANT_FIXTURE = {
+  status: 'opened',
+  locale: 'ja',
+  ocrStatus: 'done',
+  confidence: {},
+  prefill: {
+    fullName: '',
+    furigana: '',
+    birthDate: '',
+    gender: '',
+    nationality: '',
+    address: '',
+    phone: '',
+    email: '',
+    visaStatus: '',
+    visaExpiry: '',
+    education: '',
+    workHistory: '',
+    qualifications: '',
+    motivation: '',
+  },
+  submitted: false,
+};
+
+interface MockOptions {
+  getStatus?: number;
+  getBody?: unknown;
+  submitStatus?: number;
+  submitBody?: unknown;
+}
+
+/** Mock `/api/a/[token]` (GET), `/draft` (PUT), `/submit` (POST), `/card` (POST). */
+async function mockApplicantApi(page: Page, opts: MockOptions = {}): Promise<void> {
+  const {
+    getStatus = 200,
+    getBody = APPLICANT_FIXTURE,
+    submitStatus = 200,
+    submitBody = { ok: true },
+  } = opts;
+
+  await page.route('**/api/a/**', async (route) => {
+    const url = route.request().url();
+    const method = route.request().method();
+
+    if (method === 'POST' && url.endsWith('/submit')) {
+      await route.fulfill({
+        status: submitStatus,
+        contentType: 'application/json',
+        body: JSON.stringify(submitBody),
+      });
+      return;
+    }
+    if (method === 'PUT' && url.endsWith('/draft')) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+      return;
+    }
+    if (method === 'POST' && url.endsWith('/card')) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+      return;
+    }
+    if (method === 'GET') {
+      await route.fulfill({
+        status: getStatus,
+        contentType: 'application/json',
+        body: JSON.stringify(getBody),
+      });
+      return;
+    }
+    await route.continue();
+  });
+}
+
+async function fillRequiredFields(page: Page): Promise<void> {
+  await page.fill('#fullName', 'Nguyen Van A');
+  await page.fill('#birthDate', '2000-01-01');
+  await page.fill('#nationality', 'Vietnam');
+}
+
 test.describe('Resume Maker E2E Flow', () => {
-  // Test 1: Successful OAuth login and redirect to form
-  test('should login with Google OAuth and redirect to form page', async ({ page }) => {
+  // Main flow, step 1: OAuth sign-in entry point.
+  test('should show the Google OAuth sign-in button on the signin page', async ({ page }) => {
     await page.goto('/auth/signin');
 
-    // Verify signin page loaded
-    expect(page).toHaveURL(/.*\/auth\/signin/);
-    const signInButton = page.locator('button:has-text("Sign in with Google"), button:has-text("Google")');
-    await expect(signInButton).toBeVisible();
+    await expect(page).toHaveURL(/\/auth\/signin/);
+    await expect(page.locator('button:has-text("Google")')).toBeVisible();
   });
 
-  // Test 2: Form page loads with pre-filled data
-  test('should load form page with auto-filled data when token is valid', async ({ page, context }) => {
-    // Mock a valid session and navigate directly to form
-    await context.addCookies([{
-      name: 'authjs.session-token',
-      value: 'mock-session-token',
-      url: 'http://localhost:3000',
-    }]);
+  // Main flow, steps 2-4: form loads pre-filled → applicant submits → done page.
+  test('main flow: applicant fills the form, submits, and reaches the done page', async ({ page }) => {
+    await mockApplicantApi(page);
+    await page.goto(`/a/${VALID_TOKEN}/form`);
 
-    await page.goto('/a/valid-token/form');
+    const fullNameInput = page.locator('#fullName');
+    await expect(fullNameInput).toBeVisible({ timeout: 10000 });
 
-    // Wait for loading state to finish
-    const loadingSpinner = page.locator('text=Loading');
-    if (await loadingSpinner.isVisible()) {
-      await loadingSpinner.waitFor({ state: 'hidden', timeout: 5000 });
-    }
+    await fillRequiredFields(page);
+    await page.click('button[type="submit"]');
 
-    // Verify form elements are present
-    const formInputs = page.locator('input[type="text"], textarea');
-    expect(await formInputs.count()).toBeGreaterThan(0);
+    await page.waitForURL(new RegExp(`/a/${VALID_TOKEN}/done`), { timeout: 10000 });
+    await expect(page).toHaveURL(new RegExp(`/a/${VALID_TOKEN}/done`));
   });
 
-  // Test 3: Form validation error - empty required field
-  test('should show validation error when required field is empty', async ({ page, context }) => {
-    await context.addCookies([{
-      name: 'authjs.session-token',
-      value: 'mock-session-token',
-      url: 'http://localhost:3000',
-    }]);
+  // Error scenario 1/3: token expired.
+  test('error scenario: expired token shows an error instead of the form', async ({ page }) => {
+    await mockApplicantApi(page, { getStatus: 410, getBody: { error: 'token_expired' } });
+    await page.goto(`/a/${EXPIRED_TOKEN}/form`);
 
-    await page.goto('/a/valid-token/form');
+    await expect(page.getByText(/token_expired|expired/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('button[type="submit"]')).toHaveCount(0);
+  });
 
-    // Wait for form to load
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+  // Error scenario 2/3: client-side validation error.
+  test('error scenario: submitting with empty required fields shows a validation error', async ({ page }) => {
+    await mockApplicantApi(page);
+    await page.goto(`/a/${VALID_TOKEN}/form`);
 
-    // Attempt to submit without filling required fields
     const submitButton = page.locator('button[type="submit"]');
-    await expect(submitButton).toBeVisible();
+    await expect(submitButton).toBeVisible({ timeout: 10000 });
     await submitButton.click();
 
-    // Verify validation error message
-    const errorMessage = page.locator('text=required');
-    await expect(errorMessage).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/required/i).first()).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(new RegExp(`/a/${VALID_TOKEN}/form`));
   });
 
-  // Test 4: Form submission success flow
-  test('should submit form and navigate to done page', async ({ page, context }) => {
-    await context.addCookies([{
-      name: 'authjs.session-token',
-      value: 'mock-session-token',
-      url: 'http://localhost:3000',
-    }]);
+  // Error scenario 3/3: backend returns a server error on submit.
+  test('error scenario: server error on submit keeps the applicant on the form with an error message', async ({ page }) => {
+    await mockApplicantApi(page, { submitStatus: 500, submitBody: { error: 'server_error' } });
+    await page.goto(`/a/${VALID_TOKEN}/form`);
 
-    await page.goto('/a/valid-token/form');
+    await expect(page.locator('#fullName')).toBeVisible({ timeout: 10000 });
+    await fillRequiredFields(page);
+    await page.click('button[type="submit"]');
 
-    // Wait for form to load
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-
-    // Fill in required fields (basic example - adjust field IDs as needed)
-    const inputs = page.locator('input[type="text"], textarea');
-    const inputCount = await inputs.count();
-
-    for (let i = 0; i < Math.min(inputCount, 3); i++) {
-      const input = inputs.nth(i);
-      await input.fill(`Test Value ${i + 1}`);
-    }
-
-    // Submit form
-    const submitButton = page.locator('button[type="submit"]');
-    await submitButton.click();
-
-    // Verify navigation to done page
-    await page.waitForURL(/.*\/a\/.*\/done/, { timeout: 10000 });
-    expect(page).toHaveURL(/.*\/done/);
+    await expect(page.getByText(/Error: server_error/i)).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(new RegExp(`/a/${VALID_TOKEN}/form`));
   });
 
-  // Test 5: API failure handling - 404 token not found
-  test('should handle invalid/expired token gracefully', async ({ page }) => {
-    await page.goto('/a/invalid-token/form');
+  // Accessibility audit (axe scan) on the form page.
+  test('should pass accessibility audit (axe scan) on the form page', async ({ page }) => {
+    await mockApplicantApi(page);
+    await page.goto(`/a/${VALID_TOKEN}/form`);
 
-    // Wait for error state to load
-    await page.waitForTimeout(2000);
+    await expect(page.locator('#fullName')).toBeVisible({ timeout: 10000 });
 
-    // Verify error message is displayed
-    const errorBox = page.locator('text=Error, text=Token not found, text=expired');
-    await expect(errorBox).toBeVisible({ timeout: 5000 });
-  });
-
-  // Test 6: Accessibility audit on form page
-  test('should pass accessibility audit (axe scan) on form page', async ({ page, context }) => {
-    await context.addCookies([{
-      name: 'authjs.session-token',
-      value: 'mock-session-token',
-      url: 'http://localhost:3000',
-    }]);
-
-    await page.goto('/a/valid-token/form');
-
-    // Wait for form to load
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-
-    // Inject axe and run accessibility check
     await injectAxe(page);
-    await checkA11y(page, null, {
+    await checkA11y(page, undefined, {
       detailedReport: true,
-      detailedReportOptions: {
-        html: true,
-      },
+      detailedReportOptions: { html: true },
     });
-  });
-
-  // Test 7: Network timeout handling
-  test('should handle network timeout with appropriate error message', async ({ page, context }) => {
-    // Simulate slow network by setting timeout
-    await context.addCookies([{
-      name: 'authjs.session-token',
-      value: 'mock-session-token',
-      url: 'http://localhost:3000',
-    }]);
-
-    await page.goto('/a/valid-token/form', { waitUntil: 'networkidle', timeout: 30000 }).catch(() => {});
-
-    // Verify page is still functional
-    const formElements = page.locator('input[type="text"], textarea, button[type="submit"]');
-    expect(await formElements.count()).toBeGreaterThan(0);
   });
 });
