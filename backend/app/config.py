@@ -1,5 +1,6 @@
 """Configuration management"""
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -41,5 +42,13 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+
+    @model_validator(mode="after")
+    def _force_debug_off_in_production(self) -> "Settings":
+        """Never allow debug mode to leak into a production deployment,
+        regardless of what DEBUG is set to in the environment."""
+        if self.environment == "production" and self.debug:
+            self.debug = False
+        return self
 
 settings = Settings()
