@@ -30,7 +30,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
 
   await prisma.applicant.update({
     where: { id: a.id },
-    data: { submittedData: clean, submittedAt: new Date(), status: 'submitted', draft: clean },
+    data: {
+      submittedData: clean,
+      submittedAt: new Date(),
+      status: 'submitted',
+      draft: clean,
+      // 本人アップロード（事前登録なし）は本人確定の氏名を管理用の名前に反映
+      ...(a.createdBy === 'self' && clean.fullName?.trim()
+        ? { displayName: clean.fullName.trim().slice(0, 100) }
+        : {}),
+    },
   });
   await prisma.auditEvent.create({ data: { applicantId: a.id, type: 'submitted' } });
   return NextResponse.json({ ok: true });

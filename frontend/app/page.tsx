@@ -1,13 +1,13 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import LandingPage from './LandingPage';
+import SelfUpload from './SelfUpload';
 
-// ホーム: スタッフは管理画面へ、未ログインはランディングページへ。
-// 求職者は /a/<token> を直接開くのでここは通らない。
+// ホーム: いきなり在留カードのアップロード画面（未ログインOK）。
+// スタッフ（Google ログイン済み）は /admin へ。
 export default async function HomePage() {
   const session = await auth();
   if (session?.user) {
     redirect('/admin');
   }
-  return <LandingPage />;
+  return <SelfUpload />;
 }

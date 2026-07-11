@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { findApplicantByToken } from '@/lib/applicantApi';
 import { encryptBuffer } from '@/lib/serverCrypto';
 import { runCardOcr } from '@/lib/ocr';
+import { clientIp, rateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -13,6 +14,10 @@ const MAX_OCR_PER_APPLICANT = 10;
 // 在留カード画像アップロード → 暗号化保存 → その場でOCR実行（実測3秒）。
 export async function POST(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
+  // IPベースの簡易レート制限（いたずら対策・OCRコスト保護）
+  if (!rateLimit(`card:${clientIp(req)}`, 30, 10 * 60_000)) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
+  }
   const r = await findApplicantByToken(token);
   if (!r.ok) return r.res;
   const a = r.applicant;
@@ -80,6 +85,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
         workRestriction: typeof fields.workRestriction === 'string' ? fields.workRestriction : null,
         cardNumberLast4: last4,
         cardExpiryDate: typeof fields.cardExpiry === 'string' ? fields.cardExpiry : null,
+        // 本人アップロード（事前登録なし）の場合は OCR の氏名を管理用の名前に反映
+        ...(a.createdBy === 'self' && typeof fields.fullName === 'string' && fields.fullName
+          ? { displayName: fields.fullName.slice(0, 100) }
+          : {}),
       },
     });
     await prisma.auditEvent.create({ data: { applicantId: a.id, type: 'ocr_done' } });

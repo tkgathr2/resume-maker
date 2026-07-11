@@ -112,5 +112,10 @@
     "pdf": "Resume PDF",
     "reissue": "Reissue URL",
     "empty": "No applicants yet."
+  },
+  "landing": {
+    "staffLink": "For staff members",
+    "tooMany": "Too many requests. Please try again in a few minutes.",
+    "startFailed": "Could not start. Please check your connection and try again."
   }
 }

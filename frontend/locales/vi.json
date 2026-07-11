@@ -112,5 +112,10 @@
     "pdf": "Resume PDF",
     "reissue": "Reissue URL",
     "empty": "No applicants yet."
+  },
+  "landing": {
+    "staffLink": "Dành cho nhân viên",
+    "tooMany": "Quá nhiều yêu cầu. Vui lòng thử lại sau vài phút.",
+    "startFailed": "Không thể bắt đầu. Vui lòng kiểm tra kết nối và thử lại."
   }
 }
