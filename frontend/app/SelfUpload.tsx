@@ -4,8 +4,8 @@
 // 事前登録・名前入力・招待トークンなし。ファイル選択と同時に匿名の提出セッションを
 // 自動発行（POST /api/start）し、既存の /a/<token> フロー（OCR→確認→送信）へ流す。
 import Link from 'next/link';
-import { useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRef, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { resizeImage, uploadCard } from '@/lib/applicantClient';
@@ -13,11 +13,21 @@ import { resizeImage, uploadCard } from '@/lib/applicantClient';
 export default function SelfUpload() {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const fileRef = useRef<HTMLInputElement>(null);
   const tokenRef = useRef<string | null>(null);
+  const caRef = useRef<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ?ca= パラメータを取得
+  useEffect(() => {
+    const ca = searchParams.get('ca');
+    if (ca) {
+      caRef.current = ca;
+    }
+  }, [searchParams]);
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -79,7 +89,15 @@ export default function SelfUpload() {
             <p className="text-green-600 text-sm font-semibold">✓ {t('a.upload.uploaded')}</p>
             <p className="text-gray-500 text-xs">{t('a.upload.processingNote')}</p>
             <button
-              onClick={() => tokenRef.current && router.push(`/a/${tokenRef.current}/loading`)}
+              onClick={() => {
+                if (tokenRef.current) {
+                  let url = `/a/${tokenRef.current}/loading`;
+                  if (caRef.current) {
+                    url += `?ca=${encodeURIComponent(caRef.current)}`;
+                  }
+                  router.push(url);
+                }
+              }}
               className="w-full rounded-xl bg-brand hover:bg-brand-dark text-white text-lg font-bold py-4 transition-colors"
             >
               {t('common.next')} →
