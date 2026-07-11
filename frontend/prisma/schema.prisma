@@ -11,6 +11,7 @@ datasource db {
 model CA {
   id        String      @id @default(cuid())
   name      String      @unique // ホア / ライ / マヌス
+  code      String      @unique // 短縮暗号化コード（URL 用）ex: x7k2m
   createdAt DateTime    @default(now())
   applicants Applicant[]
 }

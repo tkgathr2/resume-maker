@@ -82,8 +82,20 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
       return;
     }
     setSending(true);
-    const ca = searchParams.get('ca') || undefined;
-    const res = await submitResume(token, form, ca);
+    let caId: string | undefined;
+    const caCode = searchParams.get('ca');
+    if (caCode) {
+      try {
+        const lookupRes = await fetch(`/api/admin/cas/lookup?code=${encodeURIComponent(caCode)}`);
+        if (lookupRes.ok) {
+          const { caId: resolvedId } = await lookupRes.json();
+          caId = resolvedId;
+        }
+      } catch (e) {
+        console.warn('Failed to lookup CA code:', e);
+      }
+    }
+    const res = await submitResume(token, form, caId);
     setSending(false);
     if (res.ok) {
       showToast('Resume submitted successfully', 'success');
