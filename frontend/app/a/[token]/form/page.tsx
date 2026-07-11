@@ -132,7 +132,7 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
         <h1 className="text-xl font-bold">{t('a.form.title')}</h1>
         <LanguageSwitcher />
       </div>
-      <p className="text-gray-500 text-sm mb-4">{t('a.form.subtitle')}</p>
+      <p className="text-gray-600 text-sm mb-4">{t('a.form.subtitle')}</p>
       {ocrFailed && (
         <p className="mb-4 rounded-lg bg-orange-50 border border-orange-300 text-orange-700 text-sm px-4 py-3">
           {t('a.ocrFailed')}

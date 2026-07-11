@@ -3,6 +3,7 @@ name: E2E Tests
 on:
   push:
     branches:
+      - master
       - main
       - develop
     paths:
@@ -10,6 +11,7 @@ on:
       - '.github/workflows/e2e.yml'
   pull_request:
     branches:
+      - master
       - main
       - develop
     paths:
@@ -22,6 +24,14 @@ jobs:
     defaults:
       run:
         working-directory: ./frontend
+
+    env:
+      DATABASE_URL: postgresql://user:password@localhost:5432/e2e_placeholder
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: e2e-test-secret-min-32-characters-long
+      GOOGLE_CLIENT_ID: e2e-test-client-id
+      GOOGLE_CLIENT_SECRET: e2e-test-client-secret
+      NEXT_PUBLIC_API_URL: http://localhost:8000
 
     steps:
       - name: Checkout code
@@ -50,7 +60,7 @@ jobs:
           NODE_ENV: test
 
       - name: Upload Playwright Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
@@ -63,6 +73,14 @@ jobs:
     defaults:
       run:
         working-directory: ./frontend
+
+    env:
+      DATABASE_URL: postgresql://user:password@localhost:5432/e2e_placeholder
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: e2e-test-secret-min-32-characters-long
+      GOOGLE_CLIENT_ID: e2e-test-client-id
+      GOOGLE_CLIENT_SECRET: e2e-test-client-secret
+      NEXT_PUBLIC_API_URL: http://localhost:8000
 
     steps:
       - name: Checkout code
@@ -91,7 +109,7 @@ jobs:
           NODE_ENV: test
 
       - name: Upload Accessibility Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: accessibility-report
