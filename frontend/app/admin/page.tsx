@@ -114,9 +114,6 @@ export default function AdminPage() {
           ))}
         </select>
       </div>
-
-      {/* 新規登録 */}
-      <form onSubmit={create} className="bg-white rounded-2xl shadow-md p-4 md:p-5 mb-6 flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-end">
           <div className="flex-1">
             <label className="block text-sm font-semibold mb-1">{t('admin.newApplicant')}</label>
