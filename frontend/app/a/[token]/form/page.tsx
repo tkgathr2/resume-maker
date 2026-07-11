@@ -139,8 +139,76 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-4" noValidate>
-        {RESUME_FIELDS.map(({ key, multiline, type }) => {
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-6" noValidate>
+        {/* === セクション①：在留カード情報（6項目） === */}
+        <div className="border-b-2 border-blue-200 pb-6">
+          <h2 className="text-lg font-bold text-blue-700 mb-4 flex items-center gap-2">
+            <span className="bg-blue-100 text-blue-700 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">①</span>
+            在留カード情報
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            💡 アップロード済みの在留カード画像から自動入力されました。必要に応じて修正してください。
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {RESUME_FIELDS.filter((f) => f.section === 'visa').map(({ key, multiline, type }) => {
+              const required = REQUIRED_FIELDS.includes(key);
+              const low = isLowConfidence(key);
+              const hasError = errors[key] || serverErrors[key];
+              const errorMsg = serverErrors[key] || (errors[key] ? t('a.form.validationRequired') : '');
+              const base = `w-full rounded-lg border px-3 py-2.5 focus:outline-none focus:ring-2 transition-all ${
+                hasError
+                  ? 'border-red-400 bg-red-50 focus:ring-red-500'
+                  : low
+                    ? 'border-yellow-400 bg-yellow-50 focus:ring-brand'
+                    : 'border-gray-300 focus:ring-brand'
+              }`;
+              return (
+                <div key={key}>
+                  <label htmlFor={key} className="block font-semibold mb-1 text-sm">
+                    {t(`form.fields.${key}`)}
+                    {required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
+                  </label>
+                  {multiline ? (
+                    <textarea
+                      id={key}
+                      value={form[key]}
+                      onChange={update(key)}
+                      placeholder={t(`form.placeholders.${key}`)}
+                      rows={3}
+                      className={`${base} resize-y`}
+                      aria-invalid={!!hasError}
+                      aria-describedby={hasError ? `${key}-error` : undefined}
+                    />
+                  ) : (
+                    <input
+                      id={key}
+                      type={type ?? 'text'}
+                      value={form[key]}
+                      onChange={update(key)}
+                      placeholder={t(`form.placeholders.${key}`)}
+                      className={base}
+                      aria-invalid={!!hasError}
+                      aria-describedby={hasError ? `${key}-error` : low ? `${key}-confidence` : undefined}
+                    />
+                  )}
+                  {low && !hasError && (
+                    <p id={`${key}-confidence`} className="text-yellow-600 text-xs mt-1">
+                      ⚠ {t('a.form.lowConfidence')}
+                    </p>
+                  )}
+                  {hasError && (
+                    <p id={`${key}-error`} className="text-red-500 text-xs mt-1">
+                      {errorMsg}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* === セクション②：その他の基本情報とスキル === */}
+        {RESUME_FIELDS.filter((f) => f.section !== 'visa').map(({ key, multiline, type }) => {
           const required = REQUIRED_FIELDS.includes(key);
           const low = isLowConfidence(key);
           const hasError = errors[key] || serverErrors[key];
