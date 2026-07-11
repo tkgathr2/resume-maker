@@ -21,7 +21,13 @@ interface Detail {
   draft: Partial<ResumeData> | null;
   submittedData: Partial<ResumeData> | null;
   submittedAt: string | null;
+  caId: string | null;
   createdAt: string;
+}
+
+interface CA {
+  id: string;
+  name: string;
 }
 
 export default function AdminDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,18 +35,30 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
   const { t } = useI18n();
   const [detail, setDetail] = useState<Detail | null>(null);
   const [form, setForm] = useState<ResumeData>(EMPTY_RESUME);
+  const [cas, setCas] = useState<CA[]>([]);
+  const [selectedCaId, setSelectedCaId] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  const [savingCa, setSavingCa] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
   const [reissuedUrl, setReissuedUrl] = useState<string | null>(null);
   const [showCard, setShowCard] = useState(false);
 
   const reload = useCallback(async () => {
+    // CA 一覧取得
+    const casRes = await fetch('/api/admin/cas', { cache: 'no-store' });
+    if (casRes.ok) {
+      const casJson = await casRes.json();
+      setCas(casJson.cas ?? []);
+    }
+
+    // 求職者詳細取得
     const res = await fetch(`/api/admin/applicants/${id}`, { cache: 'no-store' });
     if (!res.ok) return;
     const json = await res.json();
     const d: Detail = json.applicant;
     setDetail(d);
     setForm({ ...EMPTY_RESUME, ...(d.submittedData ?? d.draft ?? {}) });
+    setSelectedCaId(d.caId ?? '');
   }, [id]);
 
   useEffect(() => {
@@ -55,6 +73,18 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
       body: JSON.stringify({ action: 'update', data: form }),
     });
     setSaving(false);
+    setSavedMsg(true);
+    setTimeout(() => setSavedMsg(false), 2000);
+  };
+
+  const saveCa = async () => {
+    setSavingCa(true);
+    await fetch(`/api/admin/applicants/${id}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'update_ca', caId: selectedCaId || null }),
+    });
+    setSavingCa(false);
     setSavedMsg(true);
     setTimeout(() => setSavedMsg(false), 2000);
   };
@@ -125,6 +155,30 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
           {new Date(detail.tokenExpiresAt).toLocaleDateString('ja-JP')}
           {detail.cardNumberLast4 && <> / card: ****{detail.cardNumberLast4}</>}
         </p>
+      </div>
+
+      {/* CA 選択 */}
+      <div className="bg-white rounded-2xl shadow-md p-5 mb-6 flex flex-col gap-3">
+        <label className="block text-sm font-semibold">CA 選択</label>
+        <select
+          value={selectedCaId}
+          onChange={(e) => setSelectedCaId(e.target.value)}
+          className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
+        >
+          <option value="">未設定</option>
+          {cas.map((ca) => (
+            <option key={ca.id} value={ca.id}>
+              {ca.name}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={saveCa}
+          disabled={savingCa}
+          className="rounded-lg bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-semibold px-6 py-2.5 w-fit"
+        >
+          {t('common.save')}
+        </button>
       </div>
 
       {/* カード画像（スタッフ確認用） */}

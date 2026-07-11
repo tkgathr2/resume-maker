@@ -2,7 +2,7 @@
 
 // 画面②: 自動入力済みフォーム。低confidence項目は黄色ハイライト。下書き自動保存。
 import { use, useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useI18n, LOCALES, type Locale } from '@/lib/i18n';
 import { useToast } from '@/lib/useToast';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -16,6 +16,7 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
   const { token } = use(params);
   const { t, setLocale } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { show: showToast } = useToast();
   const [ready, setReady] = useState(false);
   const [form, setForm] = useState<ResumeData>(EMPTY_RESUME);
@@ -81,7 +82,8 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
       return;
     }
     setSending(true);
-    const res = await submitResume(token, form);
+    const ca = searchParams.get('ca') || undefined;
+    const res = await submitResume(token, form, ca);
     setSending(false);
     if (res.ok) {
       showToast('Resume submitted successfully', 'success');

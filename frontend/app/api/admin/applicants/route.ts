@@ -7,10 +7,15 @@ export const runtime = 'nodejs';
 
 const TOKEN_TTL_DAYS = 14;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const g = await requireStaff();
   if (!g.ok) return g.res;
+
+  const caId = req.nextUrl.searchParams.get('caId');
+  const where = caId ? { caId } : {};
+
   const applicants = await prisma.applicant.findMany({
+    where,
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -21,6 +26,7 @@ export async function GET() {
       workRestriction: true,
       submittedAt: true,
       tokenExpiresAt: true,
+      caId: true,
       createdAt: true,
     },
     take: 200,

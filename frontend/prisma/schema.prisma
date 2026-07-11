@@ -7,6 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// CA マスタ（担当キャリアアドバイザー）
+model CA {
+  id        String      @id @default(cuid())
+  name      String      @unique // ホア / ライ / マヌス
+  createdAt DateTime    @default(now())
+  applicants Applicant[]
+}
+
 // 求職者（1人=1招待トークン）。在留カード番号はフル保存しない（下4桁のみ）。
 model Applicant {
   id              String    @id @default(cuid())
@@ -28,11 +36,14 @@ model Applicant {
   submittedData   Json? // 提出確定データ（以降は求職者側読取専用）
   submittedAt     DateTime?
   createdBy       String? // スタッフのメール
+  caId            String?
+  ca              CA?       @relation(fields: [caId], references: [id], onDelete: SetNull)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   events          AuditEvent[]
 
   @@index([status])
+  @@index([caId])
 }
 
 model AuditEvent {

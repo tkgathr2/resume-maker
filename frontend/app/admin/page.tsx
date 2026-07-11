@@ -14,7 +14,13 @@ interface Row {
   ocrStatus: string;
   workRestriction: string | null;
   submittedAt: string | null;
+  caId: string | null;
   createdAt: string;
+}
+
+interface CA {
+  id: string;
+  name: string;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -28,7 +34,9 @@ const STATUS_COLOR: Record<string, string> = {
 export default function AdminPage() {
   const { t } = useI18n();
   const [rows, setRows] = useState<Row[]>([]);
+  const [cas, setCas] = useState<CA[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCaId, setSelectedCaId] = useState<string>('');
   const [name, setName] = useState('');
   const [locale, setLocale] = useState('ja');
   const [issuedUrl, setIssuedUrl] = useState<string | null>(null);
@@ -36,13 +44,22 @@ export default function AdminPage() {
   const [creating, setCreating] = useState(false);
 
   const reload = useCallback(async () => {
-    const res = await fetch('/api/admin/applicants', { cache: 'no-store' });
+    // CA 一覧取得
+    const casRes = await fetch('/api/admin/cas', { cache: 'no-store' });
+    if (casRes.ok) {
+      const casJson = await casRes.json();
+      setCas(casJson.cas ?? []);
+    }
+
+    // 求職者一覧取得（CA フィルタ適用）
+    const url = selectedCaId ? `/api/admin/applicants?caId=${selectedCaId}` : '/api/admin/applicants';
+    const res = await fetch(url, { cache: 'no-store' });
     if (res.ok) {
       const json = await res.json();
       setRows(json.applicants ?? []);
     }
     setLoading(false);
-  }, []);
+  }, [selectedCaId]);
 
   useEffect(() => {
     void reload();
@@ -80,6 +97,23 @@ export default function AdminPage() {
         <LanguageSwitcher />
       </div>
       <p className="text-gray-500 text-sm sm:text-base mb-6">{t('admin.subtitle')}</p>
+
+      {/* CA セレクト */}
+      <div className="bg-white rounded-2xl shadow-md p-4 md:p-5 mb-6">
+        <label className="block text-sm font-semibold mb-2">CA 選択</label>
+        <select
+          value={selectedCaId}
+          onChange={(e) => setSelectedCaId(e.target.value)}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
+        >
+          <option value="">全て表示</option>
+          {cas.map((ca) => (
+            <option key={ca.id} value={ca.id}>
+              {ca.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* 新規登録 */}
       <form onSubmit={create} className="bg-white rounded-2xl shadow-md p-4 md:p-5 mb-6 flex flex-col gap-4">

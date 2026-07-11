@@ -28,6 +28,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     return NextResponse.json({ error: 'missing_required', fields: missing }, { status: 422 });
   }
 
+  // CA 名から caId を取得
+  const caName = req.nextUrl.searchParams.get('ca');
+  let caId: string | null = null;
+  if (caName) {
+    const ca = await prisma.cA.findUnique({ where: { name: caName } });
+    if (ca) caId = ca.id;
+  }
+
   await prisma.applicant.update({
     where: { id: a.id },
     data: {
@@ -35,6 +43,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       submittedAt: new Date(),
       status: 'submitted',
       draft: clean,
+      caId,
       // 本人アップロード（事前登録なし）は本人確定の氏名を管理用の名前に反映
       ...(a.createdBy === 'self' && clean.fullName?.trim()
         ? { displayName: clean.fullName.trim().slice(0, 100) }

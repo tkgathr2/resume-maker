@@ -73,9 +73,12 @@ export async function saveDraft(token: string, data: ResumeData): Promise<void> 
 
 export async function submitResume(
   token: string,
-  data: ResumeData
+  data: ResumeData,
+  ca?: string
 ): Promise<{ ok?: boolean; error?: string; fields?: string[] }> {
-  const res = await fetch(`/api/a/${token}/submit`, {
+  const url = new URL(`/api/a/${token}/submit`, typeof window !== 'undefined' ? window.location.origin : '');
+  if (ca) url.searchParams.set('ca', ca);
+  const res = await fetch(url.toString(), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(data),

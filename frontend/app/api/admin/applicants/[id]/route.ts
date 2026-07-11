@@ -28,6 +28,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       draft: true,
       submittedData: true,
       submittedAt: true,
+      caId: true,
       createdBy: true,
       createdAt: true,
     },
@@ -62,6 +63,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
     await prisma.applicant.update({ where: { id }, data: { submittedData: clean } });
     await prisma.auditEvent.create({ data: { applicantId: id, type: 'staff_edited', detail: g.email } });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === 'update_ca') {
+    const caId = body?.caId ?? null;
+    await prisma.applicant.update({ where: { id }, data: { caId } });
     return NextResponse.json({ ok: true });
   }
 
