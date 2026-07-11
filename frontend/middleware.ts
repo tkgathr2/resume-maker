@@ -8,14 +8,18 @@ import { auth } from '@/auth';
 // - /api/auth/*: NextAuth、/api/cron/*: CRON_SECRET で自己防衛 → ログイン不要
 export default auth((req) => {
   const { pathname } = req.nextUrl;
+  // 注意: startsWith('/a') は /admin にも一致してしまうため、必ず '/a/' 区切りで判定する
   const isPublic =
     pathname === '/' ||
-    pathname.startsWith('/auth') ||
-    pathname.startsWith('/a') ||
-    pathname.startsWith('/api/a') ||
+    pathname.startsWith('/auth/') ||
+    pathname === '/auth' ||
+    pathname === '/a' ||
+    pathname.startsWith('/a/') ||
+    pathname === '/api/a' ||
+    pathname.startsWith('/api/a/') ||
     pathname === '/api/start' ||
-    pathname.startsWith('/api/auth') ||
-    pathname.startsWith('/api/cron');
+    pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/api/cron/');
   const isLoggedIn = !!req.auth;
 
   if (isPublic) {
