@@ -39,6 +39,8 @@ model Applicant {
   createdBy       String? // スタッフのメール
   caId            String?
   ca              CA?       @relation(fields: [caId], references: [id], onDelete: SetNull)
+  editTokenHash   String?   @unique // 「後から修正」本人トークンのSHA-256ハッシュ（平文は非保存）
+  updatedBy       String?   // 直近の修正者: "self"（本人） / staffのメール
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   events          AuditEvent[]

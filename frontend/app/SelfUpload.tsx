@@ -21,13 +21,28 @@ export default function SelfUpload() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const ca = searchParams.get('ca');
+
   // ?ca= パラメータを取得
   useEffect(() => {
-    const ca = searchParams.get('ca');
     if (ca) {
       caRef.current = ca;
     }
-  }, [searchParams]);
+  }, [ca]);
+
+  // ?ca= が無いアクセスは担当CA経由のURLではないため、案内のみ表示してアップロードは開始させない。
+  if (!ca) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex justify-end p-4">
+          <LanguageSwitcher />
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-10 text-center">
+          <p className="text-gray-600 max-w-sm">{t('landing.noCaMessage')}</p>
+        </div>
+      </main>
+    );
+  }
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

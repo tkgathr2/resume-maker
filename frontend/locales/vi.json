@@ -115,11 +115,30 @@
     "detail": "Detail",
     "pdf": "Resume PDF",
     "reissue": "Reissue URL",
+    "reissueEditUrl": "Cấp lại URL chỉnh sửa",
     "empty": "No applicants yet."
   },
   "landing": {
     "staffLink": "Dành cho nhân viên",
     "tooMany": "Quá nhiều yêu cầu. Vui lòng thử lại sau vài phút.",
-    "startFailed": "Không thể bắt đầu. Vui lòng kiểm tra kết nối và thử lại."
+    "startFailed": "Không thể bắt đầu. Vui lòng kiểm tra kết nối và thử lại.",
+    "noCaMessage": "Trang này chỉ có thể sử dụng qua liên kết do CA phụ trách gửi. Vui lòng liên hệ CA của bạn để nhận URL."
+  },
+  "my": {
+    "form": {
+      "title": "Chỉnh sửa thông tin của bạn",
+      "subtitle": "Kiểm tra nội dung đã gửi, sửa chỗ sai rồi lưu lại.",
+      "saved": "Đã lưu"
+    },
+    "invalid": {
+      "message": "Liên kết này không hợp lệ. Vui lòng liên hệ CA của bạn để được cấp liên kết mới."
+    },
+    "done": {
+      "urlLabel": "URL chỉnh sửa (dùng khi cần sửa lại sau này)",
+      "urlNote": "Vui lòng chụp màn hình URL này hoặc lưu lại ở nơi an toàn.",
+      "copyUrl": "Sao chép URL",
+      "copied": "Đã sao chép",
+      "fallbackMessage": "Không thể cấp URL chỉnh sửa. Vui lòng liên hệ CA của bạn nếu cần thay đổi."
+    }
   }
 }

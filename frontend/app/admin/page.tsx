@@ -37,6 +37,15 @@ export default function AdminPage() {
   const [cas, setCas] = useState<CA[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCaId, setSelectedCaId] = useState<string>('');
+  const [editUrls, setEditUrls] = useState<Record<string, string>>({});
+
+  const reissueEditToken = useCallback(async (id: string) => {
+    const res = await fetch(`/api/admin/applicants/${id}/reissue-token`, { method: 'POST' });
+    if (res.ok) {
+      const json = await res.json();
+      setEditUrls((prev) => ({ ...prev, [id]: json.url }));
+    }
+  }, []);
 
   const reload = useCallback(async () => {
     // CA 一覧取得
@@ -129,9 +138,28 @@ export default function AdminPage() {
                       {r.submittedAt ? new Date(r.submittedAt).toLocaleString('ja-JP') : '—'}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link href={`/admin/${r.id}`} className="text-brand font-semibold hover:underline text-sm">
-                        {t('admin.detail')} →
-                      </Link>
+                      <div className="flex flex-col items-end gap-1">
+                        <Link href={`/admin/${r.id}`} className="text-brand font-semibold hover:underline text-sm">
+                          {t('admin.detail')} →
+                        </Link>
+                        <button
+                          onClick={() => reissueEditToken(r.id)}
+                          className="text-xs font-semibold text-orange-600 hover:underline"
+                        >
+                          {t('admin.reissueEditUrl')}
+                        </button>
+                        {editUrls[r.id] && (
+                          <div className="flex items-center gap-1 max-w-[220px]">
+                            <code className="text-[10px] break-all">{editUrls[r.id]}</code>
+                            <button
+                              onClick={() => navigator.clipboard.writeText(editUrls[r.id])}
+                              className="text-[10px] font-semibold text-brand shrink-0"
+                            >
+                              {t('admin.copyUrl')}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -173,6 +201,25 @@ export default function AdminPage() {
                     <p className="text-gray-500">{t('admin.columns.submittedAt')}</p>
                     <p className="mt-1 text-gray-600">{r.submittedAt ? new Date(r.submittedAt).toLocaleString('ja-JP') : '—'}</p>
                   </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <button
+                    onClick={() => reissueEditToken(r.id)}
+                    className="text-xs font-semibold text-orange-600 hover:underline"
+                  >
+                    {t('admin.reissueEditUrl')}
+                  </button>
+                  {editUrls[r.id] && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <code className="text-[10px] break-all flex-1">{editUrls[r.id]}</code>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(editUrls[r.id])}
+                        className="text-[10px] font-semibold text-brand shrink-0"
+                      >
+                        {t('admin.copyUrl')}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

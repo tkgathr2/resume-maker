@@ -75,7 +75,7 @@ export async function submitResume(
   token: string,
   data: ResumeData,
   ca?: string
-): Promise<{ ok?: boolean; error?: string; fields?: string[] }> {
+): Promise<{ ok?: boolean; error?: string; fields?: string[]; editUrl?: string }> {
   const url = new URL(`/api/a/${token}/submit`, typeof window !== 'undefined' ? window.location.origin : '');
   if (ca) url.searchParams.set('ca', ca);
   const res = await fetch(url.toString(), {

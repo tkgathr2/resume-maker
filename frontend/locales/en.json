@@ -115,11 +115,30 @@
     "detail": "Detail",
     "pdf": "Resume PDF",
     "reissue": "Reissue URL",
+    "reissueEditUrl": "Reissue edit URL",
     "empty": "No applicants yet."
   },
   "landing": {
     "staffLink": "For staff members",
     "tooMany": "Too many requests. Please try again in a few minutes.",
-    "startFailed": "Could not start. Please check your connection and try again."
+    "startFailed": "Could not start. Please check your connection and try again.",
+    "noCaMessage": "This page can only be used via a link from your Career Advisor (CA). Please contact your CA to get the URL."
+  },
+  "my": {
+    "form": {
+      "title": "Edit your information",
+      "subtitle": "Review what you submitted, fix anything that's wrong, and save.",
+      "saved": "Saved"
+    },
+    "invalid": {
+      "message": "This URL is invalid. Please contact your CA to have a new URL issued."
+    },
+    "done": {
+      "urlLabel": "Edit URL (use this if you need to make changes later)",
+      "urlNote": "Please take a screenshot of this URL or save it somewhere safe.",
+      "copyUrl": "Copy URL",
+      "copied": "Copied",
+      "fallbackMessage": "We could not issue an edit URL. Please contact your CA if you need to make changes."
+    }
   }
 }

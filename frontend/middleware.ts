@@ -4,6 +4,7 @@ import { auth } from '@/auth';
 // - /: 求職者用アップロード画面（未ログインOK）→ ページ内でスタッフは /admin へ
 // - /admin/* と /api/admin/*: スタッフ用（認証必須）→ 未ログインは /auth/signin へ
 // - /a/* と /api/a/*: 求職者用（トークン認証）→ ログイン不要
+// - /my/* と /api/my/*: 求職者「後から修正」本人トークン認証 → ログイン不要
 // - /api/start: 求職者の提出開始（匿名・IPレート制限あり）→ ログイン不要
 // - /api/auth/*: NextAuth、/api/cron/*: CRON_SECRET で自己防衛 → ログイン不要
 export default auth((req) => {
@@ -17,6 +18,10 @@ export default auth((req) => {
     pathname.startsWith('/a/') ||
     pathname === '/api/a' ||
     pathname.startsWith('/api/a/') ||
+    pathname === '/my' ||
+    pathname.startsWith('/my/') ||
+    pathname === '/api/my' ||
+    pathname.startsWith('/api/my/') ||
     pathname === '/api/start' ||
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/api/cron/');

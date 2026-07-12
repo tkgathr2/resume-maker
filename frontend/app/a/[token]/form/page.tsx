@@ -100,7 +100,8 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
     setSending(false);
     if (res.ok) {
       showToast('Resume submitted successfully', 'success');
-      router.replace(`/a/${token}/done`);
+      const doneUrl = res.editUrl ? `/a/${token}/done?editUrl=${encodeURIComponent(res.editUrl)}` : `/a/${token}/done`;
+      router.replace(doneUrl);
     } else if (res.error) {
       showToast(`Error: ${res.error}`, 'error');
       if (res.fields?.length) {

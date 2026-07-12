@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { findApplicantByToken } from '@/lib/applicantApi';
 import { EMPTY_RESUME, REQUIRED_FIELDS } from '@/lib/resumeFields';
+import { generateEditToken, hashToken } from '@/lib/token';
 
 export const runtime = 'nodejs';
 
@@ -51,5 +52,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     },
   });
   await prisma.auditEvent.create({ data: { applicantId: a.id, type: 'submitted' } });
-  return NextResponse.json({ ok: true });
+
+  // 「後から修正」本人トークンを発行（失敗しても提出自体は成功扱い）。
+  let editUrl: string | undefined;
+  try {
+    const editToken = generateEditToken();
+    await prisma.applicant.update({
+      where: { id: a.id },
+      data: { editTokenHash: hashToken(editToken) },
+    });
+    editUrl = `${req.nextUrl.origin}/my/${editToken}`;
+  } catch (e) {
+    console.error('Failed to issue edit token:', e);
+  }
+
+  return NextResponse.json({ ok: true, ...(editUrl ? { editUrl } : {}) });
 }
