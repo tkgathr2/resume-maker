@@ -24,7 +24,10 @@ export default auth((req) => {
     pathname.startsWith('/api/my/') ||
     pathname === '/api/start' ||
     pathname.startsWith('/api/auth/') ||
-    pathname.startsWith('/api/cron/');
+    pathname.startsWith('/api/cron/') ||
+    // /api/pdf/[applicantId]: 暫定プレビュー用。PDF_PREVIEW_SECRET 一致で自前ガード
+    // (TODO: integrate token auth Task#1 が入り次第、ここから外して認証必須にする)
+    pathname.startsWith('/api/pdf/');
   const isLoggedIn = !!req.auth;
 
   if (isPublic) {

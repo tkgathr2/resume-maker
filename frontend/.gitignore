@@ -19,3 +19,6 @@ yarn-error.log*
 
 # OS
 .DS_Store
+
+# 検証スクリプト出力 (scripts/test-pdf.ts など)
+/tmp/
