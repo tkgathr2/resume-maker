@@ -41,9 +41,14 @@ async function postToSlack(text: string): Promise<boolean> {
 }
 
 // 新規提出時の通知。
-export async function notifySubmit(displayName: string, caName: string | null): Promise<void> {
+export async function notifySubmit(
+  displayName: string,
+  caName: string | null,
+  applicantId: string
+): Promise<void> {
   if (!slackEnabled()) return;
-  const text = `新しい履歴書が提出されました：${displayName} / 担当CA: ${caName ?? '未設定'} / 管理画面: ${ADMIN_URL}`;
+  const detailUrl = `${ADMIN_URL}/${applicantId}`;
+  const text = `新しい履歴書が提出されました：${displayName} / 担当CA: ${caName ?? '未設定'}\n詳細・修正・PDF: ${detailUrl}`;
   await postToSlack(text);
 }
 

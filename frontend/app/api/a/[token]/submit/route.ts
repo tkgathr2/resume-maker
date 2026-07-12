@@ -56,7 +56,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
   await prisma.auditEvent.create({ data: { applicantId: a.id, type: 'submitted' } });
 
   try {
-    await notifySubmit(updatedApplicant.displayName, caName);
+    await notifySubmit(updatedApplicant.displayName, caName, updatedApplicant.id);
   } catch (e) {
     console.error('Slack notify (submit) failed:', e);
   }
