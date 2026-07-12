@@ -8,7 +8,10 @@
     "back": "Back",
     "submit": "Submit",
     "save": "Save",
-    "required": "Required"
+    "required": "Required",
+    "error": "Error",
+    "backHome": "Back to home",
+    "loadFailed": "Failed to load. Please check your connection and try again."
   },
   "signin": {
     "title": "Welcome to Resume Maker",
@@ -35,7 +38,8 @@
       "subtitle": "We filled in the fields from your card. Fix any mistakes and fill in the rest.",
       "lowConfidence": "Please double-check this field — it may not have been read correctly.",
       "validationRequired": "This field is required",
-      "saved": "Saved"
+      "saved": "Saved",
+      "manualInputRequired": "Please fill in all fields yourself."
     },
     "done": {
       "title": "Submitted successfully",

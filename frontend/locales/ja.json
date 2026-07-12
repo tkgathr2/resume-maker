@@ -8,7 +8,10 @@
     "back": "戻る",
     "submit": "送信する",
     "save": "保存",
-    "required": "必須"
+    "required": "必須",
+    "error": "エラー",
+    "backHome": "ホームに戻る",
+    "loadFailed": "読み込みに失敗しました。通信環境を確認して、もう一度お試しください。"
   },
   "signin": {
     "title": "履歴書メーカーへようこそ",
@@ -35,7 +38,8 @@
       "subtitle": "カードから自動入力しました。間違いがあれば直して、残りの項目を入力してください。",
       "lowConfidence": "この項目は読み取りに自信がありません。必ず確認してください。",
       "validationRequired": "この項目は必須です",
-      "saved": "保存しました"
+      "saved": "保存しました",
+      "manualInputRequired": "すべての項目をご自身で入力してください。"
     },
     "done": {
       "title": "送信が完了しました",

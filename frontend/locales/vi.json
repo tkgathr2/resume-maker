@@ -8,7 +8,10 @@
     "back": "Quay lại",
     "submit": "Gửi",
     "save": "Lưu",
-    "required": "Bắt buộc"
+    "required": "Bắt buộc",
+    "error": "Lỗi",
+    "backHome": "Về trang chủ",
+    "loadFailed": "Không tải được. Vui lòng kiểm tra kết nối mạng và thử lại."
   },
   "signin": {
     "title": "Chào mừng đến Resume Maker",
@@ -35,7 +38,8 @@
       "subtitle": "Đã tự động điền từ thẻ. Hãy sửa nếu sai và điền các mục còn lại.",
       "lowConfidence": "Mục này có thể đọc chưa chính xác — hãy kiểm tra kỹ.",
       "validationRequired": "Mục này là bắt buộc",
-      "saved": "Đã lưu"
+      "saved": "Đã lưu",
+      "manualInputRequired": "Vui lòng tự điền tất cả các mục."
     },
     "done": {
       "title": "Đã gửi thành công",

@@ -7,6 +7,7 @@ import { useI18n, LOCALES, type Locale } from '@/lib/i18n';
 import { useToast } from '@/lib/useToast';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Spinner from '@/components/Spinner';
+import ErrorScreen from '@/components/ErrorScreen';
 import { EMPTY_RESUME, RESUME_FIELDS, REQUIRED_FIELDS, type ResumeData } from '@/lib/resumeFields';
 import { fetchApplicant, saveDraft, submitResume } from '@/lib/applicantClient';
 
@@ -114,14 +115,10 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
 
   if (loadError) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="rounded-lg bg-red-50 border border-red-300 text-red-700 px-6 py-4 text-center max-w-md">
-          <h2 className="font-bold mb-2">{t('common.error')}</h2>
-          <p className="text-sm">
-            {loadError === 'notFound' ? 'Token not found or expired' : loadError}
-          </p>
-        </div>
-      </main>
+      <ErrorScreen
+        errorKey={loadError === 'notFound' ? 'a.expired.message' : 'common.loadFailed'}
+        showHome={true}
+      />
     );
   }
 

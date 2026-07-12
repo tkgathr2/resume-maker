@@ -37,11 +37,6 @@ export default function AdminPage() {
   const [cas, setCas] = useState<CA[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCaId, setSelectedCaId] = useState<string>('');
-  const [name, setName] = useState('');
-  const [locale, setLocale] = useState('ja');
-  const [issuedUrl, setIssuedUrl] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [creating, setCreating] = useState(false);
 
   const reload = useCallback(async () => {
     // CA 一覧取得
@@ -64,31 +59,6 @@ export default function AdminPage() {
   useEffect(() => {
     void reload();
   }, [reload]);
-
-  const create = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    setCreating(true);
-    const res = await fetch('/api/admin/applicants', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ displayName: name.trim(), locale }),
-    });
-    setCreating(false);
-    if (res.ok) {
-      const json = await res.json();
-      setIssuedUrl(json.url);
-      setCopied(false);
-      setName('');
-      void reload();
-    }
-  };
-
-  const copy = async () => {
-    if (!issuedUrl) return;
-    await navigator.clipboard.writeText(issuedUrl);
-    setCopied(true);
-  };
 
   return (
     <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
@@ -114,46 +84,6 @@ export default function AdminPage() {
           ))}
         </select>
       </div>
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-semibold mb-1">{t('admin.newApplicant')}</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t('admin.namePlaceholder')}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand text-sm"
-            />
-          </div>
-          <div className="w-full sm:w-auto">
-            <label className="block text-sm font-semibold mb-1">{t('admin.columns.language')}</label>
-            <select
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              className="w-full sm:w-auto rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
-            >
-              <option value="ja">日本語</option>
-              <option value="ne">नेपाली</option>
-              <option value="en">English</option>
-              <option value="vi">Tiếng Việt</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            disabled={creating || !name.trim()}
-            className="w-full sm:w-auto rounded-lg bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-semibold px-4 sm:px-6 py-2.5 text-sm"
-          >
-            {t('admin.create')}
-          </button>
-        </div>
-        {issuedUrl && (
-          <div className="w-full flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-            <code className="text-xs break-all flex-1">{issuedUrl}</code>
-            <button type="button" onClick={copy} className="shrink-0 text-sm font-semibold text-brand">
-              {copied ? `✓ ${t('admin.copied')}` : t('admin.copyUrl')}
-            </button>
-          </div>
-        )}
-      </form>
 
       {/* 一覧 */}
       {loading ? (
