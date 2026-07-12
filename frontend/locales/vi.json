@@ -116,7 +116,14 @@
     "pdf": "Resume PDF",
     "reissue": "Reissue URL",
     "reissueEditUrl": "Cấp lại URL chỉnh sửa",
-    "empty": "No applicants yet."
+    "empty": "No applicants yet.",
+    "history": {
+      "title": "Lịch sử chỉnh sửa",
+      "empty": "Chưa có lịch sử chỉnh sửa.",
+      "self": "Ứng viên (tự chỉnh sửa)",
+      "expand": "Xem chi tiết",
+      "collapse": "Ẩn chi tiết"
+    }
   },
   "landing": {
     "staffLink": "Dành cho nhân viên",
@@ -128,7 +135,8 @@
     "form": {
       "title": "Chỉnh sửa thông tin của bạn",
       "subtitle": "Kiểm tra nội dung đã gửi, sửa chỗ sai rồi lưu lại.",
-      "saved": "Đã lưu"
+      "saved": "Đã lưu",
+      "viewPdf": "Xem PDF hồ sơ"
     },
     "invalid": {
       "message": "Liên kết này không hợp lệ. Vui lòng liên hệ CA của bạn để được cấp liên kết mới."

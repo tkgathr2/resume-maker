@@ -61,7 +61,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       const v = body?.data?.[key];
       if (typeof v === 'string') clean[key] = v.slice(0, 4000);
     }
-    await prisma.applicant.update({ where: { id }, data: { submittedData: clean, updatedBy: 'staff' } });
+    await prisma.$transaction(async (tx) => {
+      const before = await tx.applicant.findUnique({ where: { id }, select: { submittedData: true } });
+      // 更新前の全提出データをスナップショットとして保存してから上書きする。
+      await tx.applicantRevision.create({
+        data: { applicantId: id, snapshot: before?.submittedData ?? {}, changedBy: g.email },
+      });
+      await tx.applicant.update({ where: { id }, data: { submittedData: clean, updatedBy: 'staff' } });
+    });
     await prisma.auditEvent.create({ data: { applicantId: id, type: 'staff_edited', detail: g.email } });
     return NextResponse.json({ ok: true });
   }

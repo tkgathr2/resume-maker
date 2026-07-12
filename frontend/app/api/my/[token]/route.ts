@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { findApplicantByEditToken } from '@/lib/applicantApi';
 import { rateLimit, clientIp } from '@/lib/rateLimit';
 import { EMPTY_RESUME, type ResumeData } from '@/lib/resumeFields';
+import { notifySelfEdit } from '@/lib/slackNotify';
 
 export const runtime = 'nodejs';
 
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
   const a = r.applicant;
 
   const data: ResumeData = { ...EMPTY_RESUME, ...((a.submittedData as Partial<ResumeData>) ?? {}) };
-  return NextResponse.json({ locale: a.locale, data, updatedAt: a.updatedAt });
+  return NextResponse.json({ id: a.id, locale: a.locale, data, updatedAt: a.updatedAt });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
@@ -44,11 +45,23 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ toke
     clean[key] = typeof v === 'string' ? v.slice(0, 4000) : '';
   }
 
-  const updated = await prisma.applicant.update({
-    where: { id: a.id },
-    data: { submittedData: clean, updatedBy: 'self' },
+  const updated = await prisma.$transaction(async (tx) => {
+    // 更新前の全提出データをスナップショットとして保存してから上書きする。
+    await tx.applicantRevision.create({
+      data: { applicantId: a.id, snapshot: a.submittedData ?? {}, changedBy: 'self' },
+    });
+    return tx.applicant.update({
+      where: { id: a.id },
+      data: { submittedData: clean, updatedBy: 'self' },
+    });
   });
   await prisma.auditEvent.create({ data: { applicantId: a.id, type: 'self_edited' } });
+
+  try {
+    await notifySelfEdit(updated.displayName);
+  } catch (e) {
+    console.error('Slack notify (self_edited) failed:', e);
+  }
 
   return NextResponse.json({ ok: true, updatedAt: updated.updatedAt });
 }

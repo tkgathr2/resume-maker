@@ -15,6 +15,7 @@ export default function MyEditPage({ params }: { params: Promise<{ token: string
   const { show: showToast } = useToast();
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [applicantId, setApplicantId] = useState<string | null>(null);
   const [form, setForm] = useState<ResumeData>(EMPTY_RESUME);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
@@ -28,6 +29,7 @@ export default function MyEditPage({ params }: { params: Promise<{ token: string
         }
         const json = await res.json();
         if (LOCALES.includes(json.locale as Locale)) setLocale(json.locale as Locale);
+        setApplicantId(json.id ?? null);
         setForm({ ...EMPTY_RESUME, ...json.data });
         setReady(true);
       })
@@ -94,6 +96,17 @@ export default function MyEditPage({ params }: { params: Promise<{ token: string
         <LanguageSwitcher />
       </div>
       <p className="text-gray-600 text-sm mb-4">{t('my.form.subtitle')}</p>
+
+      {applicantId && (
+        <a
+          href={`/api/pdf/${applicantId}?token=${encodeURIComponent(token)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-4 inline-block rounded-lg border border-brand text-brand font-semibold px-4 py-2 text-sm hover:bg-brand/5"
+        >
+          {t('my.form.viewPdf')}
+        </a>
+      )}
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-6" noValidate>
         {RESUME_FIELDS.map(({ key, multiline, type }) => {

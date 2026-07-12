@@ -116,7 +116,14 @@
     "pdf": "Resume PDF",
     "reissue": "Reissue URL",
     "reissueEditUrl": "Reissue edit URL",
-    "empty": "No applicants yet."
+    "empty": "No applicants yet.",
+    "history": {
+      "title": "सच्याएको इतिहास",
+      "empty": "अहिलेसम्म सच्याएको इतिहास छैन।",
+      "self": "आवेदक (स्व-सच्याइ)",
+      "expand": "विवरण हेर्नुहोस्",
+      "collapse": "विवरण लुकाउनुहोस्"
+    }
   },
   "landing": {
     "staffLink": "कर्मचारीहरूका लागि यहाँ",
@@ -128,7 +135,8 @@
     "form": {
       "title": "जानकारी सच्याउनुहोस्",
       "subtitle": "पेश गरेको जानकारी जाँचेर, गल्ती भए सच्याएर सेभ गर्नुहोस्।",
-      "saved": "सेभ भयो"
+      "saved": "सेभ भयो",
+      "viewPdf": "रिज्युमे PDF हेर्नुहोस्"
     },
     "invalid": {
       "message": "यो URL अमान्य छ। कृपया आफ्नो CA लाई सम्पर्क गरी नयाँ URL लिनुहोस्।"

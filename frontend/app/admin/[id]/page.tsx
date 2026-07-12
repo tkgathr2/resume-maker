@@ -30,6 +30,13 @@ interface CA {
   name: string;
 }
 
+interface Revision {
+  id: string;
+  snapshot: Partial<ResumeData>;
+  changedBy: string;
+  createdAt: string;
+}
+
 export default function AdminDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { t } = useI18n();
@@ -42,6 +49,8 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
   const [savedMsg, setSavedMsg] = useState(false);
   const [reissuedUrl, setReissuedUrl] = useState<string | null>(null);
   const [showCard, setShowCard] = useState(false);
+  const [revisions, setRevisions] = useState<Revision[]>([]);
+  const [expandedRevisionId, setExpandedRevisionId] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     // CA 一覧取得
@@ -59,6 +68,13 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
     setDetail(d);
     setForm({ ...EMPTY_RESUME, ...(d.submittedData ?? d.draft ?? {}) });
     setSelectedCaId(d.caId ?? '');
+
+    // 修正履歴取得
+    const revRes = await fetch(`/api/admin/applicants/${id}/revisions`, { cache: 'no-store' });
+    if (revRes.ok) {
+      const revJson = await revRes.json();
+      setRevisions(revJson.revisions ?? []);
+    }
   }, [id]);
 
   useEffect(() => {
@@ -229,12 +245,58 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
           </button>
           {savedMsg && <span className="text-green-600 text-sm font-semibold">✓ {t('a.form.saved')}</span>}
           <a
-            href={`/api/admin/applicants/${id}/pdf`}
+            href={`/api/pdf/${id}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="ml-auto rounded-lg border border-brand text-brand font-semibold px-6 py-2.5 hover:bg-brand/5"
           >
             ⬇ {t('admin.pdf')}
           </a>
         </div>
+      </div>
+
+      {/* 修正履歴 */}
+      <div className="bg-white rounded-2xl shadow-md p-5 mt-6">
+        <h2 className="text-lg font-bold mb-3">{t('admin.history.title')}</h2>
+        {revisions.length === 0 ? (
+          <p className="text-gray-400 text-sm">{t('admin.history.empty')}</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {revisions.map((rev) => {
+              const expanded = expandedRevisionId === rev.id;
+              return (
+                <li key={rev.id} className="border border-gray-200 rounded-xl p-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="text-sm">
+                      <span className="font-semibold">
+                        {rev.changedBy === 'self' ? t('admin.history.self') : rev.changedBy}
+                      </span>
+                      <span className="text-gray-400 ml-2">
+                        {new Date(rev.createdAt).toLocaleString('ja-JP')}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setExpandedRevisionId(expanded ? null : rev.id)}
+                      className="text-xs font-semibold text-brand"
+                    >
+                      {expanded ? t('admin.history.collapse') : t('admin.history.expand')}
+                    </button>
+                  </div>
+                  {expanded && (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {RESUME_FIELDS.map(({ key }) => (
+                        <div key={key} className="text-xs">
+                          <p className="text-gray-500">{t(`form.fields.${key}`)}</p>
+                          <p className="break-words">{rev.snapshot[key] || '—'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </main>
   );

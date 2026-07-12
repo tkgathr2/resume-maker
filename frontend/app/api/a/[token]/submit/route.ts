@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { findApplicantByToken } from '@/lib/applicantApi';
 import { EMPTY_RESUME, REQUIRED_FIELDS } from '@/lib/resumeFields';
 import { generateEditToken, hashToken } from '@/lib/token';
+import { notifySubmit } from '@/lib/slackNotify';
 
 export const runtime = 'nodejs';
 
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     if (ca) caId = ca.id;
   }
 
-  await prisma.applicant.update({
+  const updatedApplicant = await prisma.applicant.update({
     where: { id: a.id },
     data: {
       submittedData: clean,
@@ -52,6 +53,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     },
   });
   await prisma.auditEvent.create({ data: { applicantId: a.id, type: 'submitted' } });
+
+  try {
+    await notifySubmit(updatedApplicant.displayName, caName);
+  } catch (e) {
+    console.error('Slack notify (submit) failed:', e);
+  }
 
   // 「後から修正」本人トークンを発行（失敗しても提出自体は成功扱い）。
   let editUrl: string | undefined;

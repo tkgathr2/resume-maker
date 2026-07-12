@@ -118,7 +118,14 @@
     "pdf": "履歴書PDF",
     "reissue": "URL再発行",
     "reissueEditUrl": "修正URL再発行",
-    "empty": "まだ求職者が登録されていません。"
+    "empty": "まだ求職者が登録されていません。",
+    "history": {
+      "title": "修正履歴",
+      "empty": "修正履歴はありません。",
+      "self": "本人（自己修正）",
+      "expand": "内容を見る",
+      "collapse": "内容を隠す"
+    }
   },
   "landing": {
     "staffLink": "スタッフの方はこちら",
@@ -130,7 +137,8 @@
     "form": {
       "title": "内容を修正する",
       "subtitle": "提出済みの内容を確認し、間違っている箇所を直して保存してください。",
-      "saved": "保存しました"
+      "saved": "保存しました",
+      "viewPdf": "履歴書PDFを見る"
     },
     "invalid": {
       "message": "このURLは無効です。お手数ですが、担当CAに連絡してURLを再発行してもらってください。"

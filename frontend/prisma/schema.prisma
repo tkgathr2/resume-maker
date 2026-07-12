@@ -44,9 +44,22 @@ model Applicant {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   events          AuditEvent[]
+  revisions       ApplicantRevision[]
 
   @@index([status])
   @@index([caId])
+}
+
+// 修正のバージョン保存: 更新の直前に、変更前の全提出データをスナップショットとして残す。
+model ApplicantRevision {
+  id          String    @id @default(cuid())
+  applicantId String
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  snapshot    Json // 変更前の submittedData 全体
+  changedBy   String // 'self'（本人） / staffのメール
+  createdAt   DateTime  @default(now())
+
+  @@index([applicantId])
 }
 
 model AuditEvent {

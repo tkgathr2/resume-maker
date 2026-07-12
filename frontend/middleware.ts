@@ -25,8 +25,8 @@ export default auth((req) => {
     pathname === '/api/start' ||
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/api/cron/') ||
-    // /api/pdf/[applicantId]: 暫定プレビュー用。PDF_PREVIEW_SECRET 一致で自前ガード
-    // (TODO: integrate token auth Task#1 が入り次第、ここから外して認証必須にする)
+    // /api/pdf/[applicantId]: staff セッション or editToken(?token=) ハッシュ照合を
+    // ルート自身が判定する（どちらも無ければ自前で401）。ミドルウェアはパスを通すだけ。
     pathname.startsWith('/api/pdf/');
   const isLoggedIn = !!req.auth;
 

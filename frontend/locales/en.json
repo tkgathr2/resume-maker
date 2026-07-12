@@ -116,7 +116,14 @@
     "pdf": "Resume PDF",
     "reissue": "Reissue URL",
     "reissueEditUrl": "Reissue edit URL",
-    "empty": "No applicants yet."
+    "empty": "No applicants yet.",
+    "history": {
+      "title": "Edit history",
+      "empty": "No edit history yet.",
+      "self": "Applicant (self-edit)",
+      "expand": "View details",
+      "collapse": "Hide details"
+    }
   },
   "landing": {
     "staffLink": "For staff members",
@@ -128,7 +135,8 @@
     "form": {
       "title": "Edit your information",
       "subtitle": "Review what you submitted, fix anything that's wrong, and save.",
-      "saved": "Saved"
+      "saved": "Saved",
+      "viewPdf": "View resume PDF"
     },
     "invalid": {
       "message": "This URL is invalid. Please contact your CA to have a new URL issued."
