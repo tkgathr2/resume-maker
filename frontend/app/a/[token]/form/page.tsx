@@ -148,8 +148,8 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
       </div>
       <p className="text-gray-600 text-sm mb-4">{t('a.form.subtitle')}</p>
       {ocrFailed && (
-        <p className="mb-4 rounded-lg bg-orange-50 border border-orange-300 text-orange-700 text-sm px-4 py-3">
-          {t('a.ocrFailed')}
+        <p className="mb-4 rounded-lg bg-red-50 border border-red-300 text-red-700 text-sm px-4 py-3 font-semibold">
+          ⚠️ {t('a.ocrFailed')} {t('a.form.manualInputRequired')}
         </p>
       )}
 
