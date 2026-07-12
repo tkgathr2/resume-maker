@@ -22,11 +22,25 @@ async function main() {
     workHistory: '2019年4月 株式会社〇〇 入社\n2023年3月 株式会社〇〇 退社',
     qualifications: '普通自動車第一種運転免許\n日本語能力試験N2',
     motivation: '御社の◯◯事業に強く興味を持ち、これまでの経験を活かして貢献したいと考えています。',
-    // JIS追加項目（Applicant に対応列が無いため、フォーム側で今後キーとして流し込まれる想定）
+    // JIS追加項目（admin/[id] でCAが入力。Applicant に対応列は無く submittedData の JSON blob 内キー）
     commuteTime: '約45分',
     dependentsCount: '0人',
     maritalStatus: '無',
     requests: '特になし',
+    // 学歴・職歴・免許資格の行リスト（admin画面の動的リストUIが保存する構造化データ）。
+    // 存在する場合はこちらが優先され、上の自由記述文字列は無視される（renderer側のフォールバック確認は別途）。
+    educationHistory: [
+      { year: '2016', month: '4', content: '〇〇高等学校 入学' },
+      { year: '2019', month: '3', content: '〇〇高等学校 卒業' },
+    ],
+    workHistoryRows: [
+      { year: '2019', month: '4', content: '株式会社〇〇 入社' },
+      { year: '2023', month: '3', content: '株式会社〇〇 退社' },
+    ],
+    qualificationRows: [
+      { year: '2020', month: '11', content: '普通自動車第一種運転免許' },
+      { year: '2022', month: '7', content: '日本語能力試験N2' },
+    ],
   };
 
   const data = toJisResumeData(EMPTY_RESUME, source);

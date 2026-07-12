@@ -1,13 +1,14 @@
 import path from 'path';
 import React from 'react';
 import { Document, Page, Text, View, Font, StyleSheet, renderToBuffer } from '@react-pdf/renderer';
-import type { ResumeData } from '../resumeFields';
+import type { ResumeData, HistoryRow } from '../resumeFields';
+import { pickJisExtra, type JisExtraFields, type JisHistoryFields } from '../resumeFields';
 
 // JIS標準様式に準拠した履歴書PDF（A4縦）。
 // Applicant モデル（schema.prisma）には対応していない項目
-// （本人希望記入欄・通勤時間・扶養家族数・配偶者）があるため、
+// （本人希望記入欄・通勤時間・扶養家族数・配偶者・学歴職歴/資格の行リスト）があるため、
 // それらは submittedData/draft の JSON blob に該当キーがあれば拾い、
-// 無ければ空欄枠として描画する（schema変更は別レーン担当）。
+// 無ければ空欄枠として描画する（管理画面 admin/[id] がCA専用で書き込む。schema変更なし）。
 //
 // 同梱フォント: frontend/fonts/NotoSansJP-Regular.otf
 // （既存の lib/resumePdf.tsx と同じフォントファイルを再利用。日本語文字化け対策）
@@ -16,23 +17,8 @@ Font.register({
   src: path.join(process.cwd(), 'fonts', 'NotoSansJP-Regular.otf'),
 });
 
-// JIS履歴書で追加提示が求められる項目。Applicant に対応列が無いため、
-// 別レーンでのフォーム/スキーマ対応が入るまでは常に空欄になる。
-export interface JisExtraFields {
-  maritalStatus: string; // 配偶者（有・無）
-  dependentsCount: string; // 扶養家族数（配偶者を除く）
-  commuteTime: string; // 通勤時間
-  requests: string; // 本人希望記入欄
-}
-
-export type JisResumeData = ResumeData & JisExtraFields;
-
-export const EMPTY_JIS_EXTRA: JisExtraFields = {
-  maritalStatus: '',
-  dependentsCount: '',
-  commuteTime: '',
-  requests: '',
-};
+export type { JisExtraFields, JisHistoryFields, HistoryRow };
+export type JisResumeData = ResumeData & JisExtraFields & JisHistoryFields;
 
 // submittedData/draft の JSON blob（未知キー許容）から JisResumeData を組み立てる。
 // resumeFields.ts の EMPTY_RESUME を渡すことで、既存項目は共通のデフォルトに揃える。
@@ -40,18 +26,10 @@ export function toJisResumeData(
   emptyResume: ResumeData,
   source: (Partial<ResumeData> & Record<string, unknown>) | null | undefined
 ): JisResumeData {
-  const src = source ?? {};
-  const pick = (key: keyof JisExtraFields): string => {
-    const v = src[key];
-    return typeof v === 'string' ? v : '';
-  };
   return {
     ...emptyResume,
     ...(source ?? {}),
-    maritalStatus: pick('maritalStatus'),
-    dependentsCount: pick('dependentsCount'),
-    commuteTime: pick('commuteTime'),
-    requests: pick('requests'),
+    ...pickJisExtra(source ?? null),
   };
 }
 
@@ -135,6 +113,17 @@ function toHistoryLines(text: string): string[] {
   return lines.length > 0 ? lines : [''];
 }
 
+// 年・月・内容の行リスト（admin画面で入力）を「年月」列＋「内容」列の2列描画用に変換。
+// 空配列なら null を返し、呼び出し側で従来の自由記述文字列にフォールバックさせる。
+function toHistoryRowLines(rows: HistoryRow[]): { ym: string; content: string }[] | null {
+  const filled = rows.filter((r) => r.year || r.month || r.content);
+  if (filled.length === 0) return null;
+  return filled.map((r) => ({
+    ym: [r.year, r.month].filter(Boolean).join('/'),
+    content: r.content,
+  }));
+}
+
 function HistorySectionLabelRow({ label }: { label: string }) {
   return (
     <View style={s.historyRow}>
@@ -144,10 +133,10 @@ function HistorySectionLabelRow({ label }: { label: string }) {
   );
 }
 
-function HistoryLineRow({ line, last }: { line: string; last?: boolean }) {
+function HistoryLineRow({ ym, line, last }: { ym?: string; line: string; last?: boolean }) {
   return (
     <View style={last ? s.historyRowLast : s.historyRow}>
-      <Text style={s.historyCellYM}> </Text>
+      <Text style={s.historyCellYM}>{ym || ' '}</Text>
       <Text style={s.historyCellBody}>{line || ' '}</Text>
     </View>
   );
@@ -157,8 +146,13 @@ function ResumeDoc({ data }: { data: JisResumeData }) {
   const today = new Date();
   const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日 現在`;
   const age = calcAge(data.birthDate, today);
-  const eduLines = toHistoryLines(data.education);
-  const workLines = toHistoryLines(data.workHistory);
+  // admin画面の年・月・内容の行リストがあればそちらを優先し、無ければ従来の
+  // 自由記述文字列（改行区切り）にフォールバックする（既存の提出済みデータ互換）。
+  const eduRowLines = toHistoryRowLines(data.educationHistory);
+  const workRowLines = toHistoryRowLines(data.workHistoryRows);
+  const qualRowLines = toHistoryRowLines(data.qualificationRows);
+  const eduLines = eduRowLines ?? toHistoryLines(data.education).map((line) => ({ ym: '', content: line }));
+  const workLines = workRowLines ?? toHistoryLines(data.workHistory).map((line) => ({ ym: '', content: line }));
 
   return (
     <Document title={`履歴書 ${data.fullName}`}>
@@ -195,18 +189,26 @@ function ResumeDoc({ data }: { data: JisResumeData }) {
           </View>
           <HistorySectionLabelRow label="学歴" />
           {eduLines.map((line, i) => (
-            <HistoryLineRow key={`edu-${i}`} line={line} />
+            <HistoryLineRow key={`edu-${i}`} ym={line.ym} line={line.content} />
           ))}
           <HistorySectionLabelRow label="職歴" />
           {workLines.map((line, i) => (
-            <HistoryLineRow key={`work-${i}`} line={line} last={i === workLines.length - 1} />
+            <HistoryLineRow key={`work-${i}`} ym={line.ym} line={line.content} last={i === workLines.length - 1} />
           ))}
         </View>
 
         <Text style={s.sectionTitle}>免許・資格</Text>
-        <View style={[s.block, { minHeight: 40 }]}>
-          <Text>{data.qualifications || ' '}</Text>
-        </View>
+        {qualRowLines ? (
+          <View style={s.historyTable}>
+            {qualRowLines.map((line, i) => (
+              <HistoryLineRow key={`qual-${i}`} ym={line.ym} line={line.content} last={i === qualRowLines.length - 1} />
+            ))}
+          </View>
+        ) : (
+          <View style={[s.block, { minHeight: 40 }]}>
+            <Text>{data.qualifications || ' '}</Text>
+          </View>
+        )}
 
         <Text style={s.sectionTitle}>志望動機・自己PR</Text>
         <View style={s.block}>

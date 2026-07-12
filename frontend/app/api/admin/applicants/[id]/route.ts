@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { requireStaff } from '@/lib/staffGuard';
 import { newInviteToken } from '@/lib/serverCrypto';
-import { EMPTY_RESUME } from '@/lib/resumeFields';
+import { EMPTY_RESUME, pickJisExtra } from '@/lib/resumeFields';
 
 export const runtime = 'nodejs';
 
@@ -56,18 +57,24 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   if (action === 'update') {
-    const clean: Record<string, string> = {};
+    const clean: Record<string, unknown> = {};
     for (const key of Object.keys(EMPTY_RESUME)) {
       const v = body?.data?.[key];
       if (typeof v === 'string') clean[key] = v.slice(0, 4000);
     }
+    // JIS履歴書 追加項目（配偶者・扶養家族数・通勤時間・本人希望記入欄・学歴職歴/資格の行リスト）。
+    // CA専用の管理画面編集のみが書き込む。ホワイトリスト方式で安全に取り込む。
+    Object.assign(clean, pickJisExtra(body?.data ?? null));
     await prisma.$transaction(async (tx) => {
       const before = await tx.applicant.findUnique({ where: { id }, select: { submittedData: true } });
       // 更新前の全提出データをスナップショットとして保存してから上書きする。
       await tx.applicantRevision.create({
         data: { applicantId: id, snapshot: before?.submittedData ?? {}, changedBy: g.email },
       });
-      await tx.applicant.update({ where: { id }, data: { submittedData: clean, updatedBy: 'staff' } });
+      await tx.applicant.update({
+        where: { id },
+        data: { submittedData: clean as Prisma.InputJsonValue, updatedBy: 'staff' },
+      });
     });
     await prisma.auditEvent.create({ data: { applicantId: id, type: 'staff_edited', detail: g.email } });
     return NextResponse.json({ ok: true });

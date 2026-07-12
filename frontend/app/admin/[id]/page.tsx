@@ -4,7 +4,58 @@
 import { use, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
-import { EMPTY_RESUME, RESUME_FIELDS, type ResumeData } from '@/lib/resumeFields';
+import {
+  EMPTY_RESUME,
+  EMPTY_JIS_EXTRA,
+  EMPTY_JIS_HISTORY,
+  EMPTY_HISTORY_ROW,
+  RESUME_FIELDS,
+  type ResumeData,
+  type JisExtraFields,
+  type JisHistoryFields,
+  type HistoryRow,
+} from '@/lib/resumeFields';
+
+// admin画面が扱う全項目（求職者向けフォームには出さないJIS追加項目を含む）。
+type AdminFormData = ResumeData & JisExtraFields & JisHistoryFields;
+
+// RESUME_FIELDS のうち、通常のテキスト入力ではなく行リストエディタで扱うキー
+// → 対応する行リスト配列のキーへのマッピング。
+const HISTORY_ARRAY_KEY: Partial<Record<keyof ResumeData, keyof JisHistoryFields>> = {
+  education: 'educationHistory',
+  workHistory: 'workHistoryRows',
+  qualifications: 'qualificationRows',
+};
+
+// admin専用のJIS追加項目（4項目）のラベル。求職者向け画面には出さないため
+// 多言語locale側は変更せず、この画面内だけの日本語固定ラベルとする。
+const ADMIN_EXTRA_LABELS: Record<keyof JisExtraFields, string> = {
+  commuteTime: '通勤時間',
+  dependentsCount: '扶養家族数（配偶者を除く）',
+  maritalStatus: '配偶者',
+  requests: '本人希望記入欄',
+};
+
+// 既存の自由記述文字列（改行区切り）を行リストの初期値として取り込む。
+// すでに行リストがあればそれを優先し、無ければ従来の文字列から1行=1行として復元する
+// （提出済みデータの内容をCA画面上で失わないようにするための橋渡し）。
+function seedRows(rows: HistoryRow[] | undefined, legacyText: string | undefined): HistoryRow[] {
+  if (rows && rows.length > 0) return rows;
+  const lines = (legacyText || '')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+  if (lines.length === 0) return [{ ...EMPTY_HISTORY_ROW }];
+  return lines.map((line) => ({ ...EMPTY_HISTORY_ROW, content: line }));
+}
+
+function historyRowsToText(rows?: HistoryRow[]): string {
+  if (!rows || rows.length === 0) return '';
+  return rows
+    .filter((r) => r.year || r.month || r.content)
+    .map((r) => [r.year && `${r.year}年`, r.month && `${r.month}月`, r.content].filter(Boolean).join(' '))
+    .join('\n');
+}
 
 interface Detail {
   id: string;
@@ -18,8 +69,8 @@ interface Detail {
   cardNumberLast4: string | null;
   cardExpiryDate: string | null;
   cardUploadedAt: string | null;
-  draft: Partial<ResumeData> | null;
-  submittedData: Partial<ResumeData> | null;
+  draft: Partial<AdminFormData> | null;
+  submittedData: Partial<AdminFormData> | null;
   submittedAt: string | null;
   caId: string | null;
   createdAt: string;
@@ -32,16 +83,85 @@ interface CA {
 
 interface Revision {
   id: string;
-  snapshot: Partial<ResumeData>;
+  snapshot: Partial<AdminFormData>;
   changedBy: string;
   createdAt: string;
+}
+
+// 学歴・職歴・免許資格の「年・月・内容」行を追加/削除できる動的リストエディタ。
+function HistoryRowEditor({
+  label,
+  rows,
+  onChange,
+}: {
+  label: string;
+  rows: HistoryRow[];
+  onChange: (rows: HistoryRow[]) => void;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-semibold mb-1">{label}（年・月・内容）</label>
+      <div className="flex flex-col gap-2">
+        {rows.map((row, i) => (
+          <div key={i} className="flex items-start gap-2">
+            <input
+              value={row.year}
+              onChange={(e) => {
+                const next = [...rows];
+                next[i] = { ...next[i], year: e.target.value };
+                onChange(next);
+              }}
+              placeholder="年"
+              className="w-16 rounded-lg border border-gray-300 px-2 py-2 text-sm"
+            />
+            <input
+              value={row.month}
+              onChange={(e) => {
+                const next = [...rows];
+                next[i] = { ...next[i], month: e.target.value };
+                onChange(next);
+              }}
+              placeholder="月"
+              className="w-14 rounded-lg border border-gray-300 px-2 py-2 text-sm"
+            />
+            <input
+              value={row.content}
+              onChange={(e) => {
+                const next = [...rows];
+                next[i] = { ...next[i], content: e.target.value };
+                onChange(next);
+              }}
+              placeholder="内容（例: 〇〇高等学校 卒業）"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                onChange(rows.length > 1 ? rows.filter((_, idx) => idx !== i) : [{ ...EMPTY_HISTORY_ROW }])
+              }
+              className="text-xs text-red-500 shrink-0 py-2"
+            >
+              削除
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...rows, { ...EMPTY_HISTORY_ROW }])}
+          className="text-xs font-semibold text-brand w-fit"
+        >
+          + 行を追加
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function AdminDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { t } = useI18n();
   const [detail, setDetail] = useState<Detail | null>(null);
-  const [form, setForm] = useState<ResumeData>(EMPTY_RESUME);
+  const [form, setForm] = useState<AdminFormData>({ ...EMPTY_RESUME, ...EMPTY_JIS_EXTRA, ...EMPTY_JIS_HISTORY });
   const [cas, setCas] = useState<CA[]>([]);
   const [selectedCaId, setSelectedCaId] = useState<string>('');
   const [saving, setSaving] = useState(false);
@@ -66,7 +186,17 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
     const json = await res.json();
     const d: Detail = json.applicant;
     setDetail(d);
-    setForm({ ...EMPTY_RESUME, ...(d.submittedData ?? d.draft ?? {}) });
+
+    const submitted = (d.submittedData ?? d.draft ?? {}) as Partial<AdminFormData>;
+    setForm({
+      ...EMPTY_RESUME,
+      ...EMPTY_JIS_EXTRA,
+      ...EMPTY_JIS_HISTORY,
+      ...submitted,
+      educationHistory: seedRows(submitted.educationHistory, submitted.education),
+      workHistoryRows: seedRows(submitted.workHistoryRows, submitted.workHistory),
+      qualificationRows: seedRows(submitted.qualificationRows, submitted.qualifications),
+    });
     setSelectedCaId(d.caId ?? '');
 
     // 修正履歴取得
@@ -216,25 +346,83 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* データ編集 */}
       <div className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-3">
-        {RESUME_FIELDS.map(({ key, multiline }) => (
-          <div key={key}>
-            <label className="block text-sm font-semibold mb-1">{t(`form.fields.${key}`)}</label>
-            {multiline ? (
-              <textarea
-                value={form[key]}
-                onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                rows={3}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 resize-y"
+        {RESUME_FIELDS.map(({ key, multiline }) => {
+          const historyKey = HISTORY_ARRAY_KEY[key];
+          if (historyKey) {
+            return (
+              <HistoryRowEditor
+                key={key}
+                label={t(`form.fields.${key}`)}
+                rows={form[historyKey]}
+                onChange={(rows) => setForm((p) => ({ ...p, [historyKey]: rows }))}
               />
-            ) : (
-              <input
-                value={form[key]}
-                onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2"
-              />
-            )}
+            );
+          }
+          return (
+            <div key={key}>
+              <label className="block text-sm font-semibold mb-1">{t(`form.fields.${key}`)}</label>
+              {multiline ? (
+                <textarea
+                  value={form[key]}
+                  onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
+                  rows={3}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 resize-y"
+                />
+              ) : (
+                <input
+                  value={form[key]}
+                  onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                />
+              )}
+            </div>
+          );
+        })}
+
+        {/* JIS履歴書 追加項目（CA専用・求職者向けフォームには出さない） */}
+        <div className="border-t border-gray-200 pt-3 mt-1 flex flex-col gap-3">
+          <p className="text-xs text-gray-400">JIS履歴書 追加項目（CA入力）</p>
+          <div>
+            <label className="block text-sm font-semibold mb-1">{ADMIN_EXTRA_LABELS.commuteTime}</label>
+            <input
+              value={form.commuteTime}
+              onChange={(e) => setForm((p) => ({ ...p, commuteTime: e.target.value }))}
+              placeholder="例: 約45分"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2"
+            />
           </div>
-        ))}
+          <div>
+            <label className="block text-sm font-semibold mb-1">{ADMIN_EXTRA_LABELS.dependentsCount}</label>
+            <input
+              value={form.dependentsCount}
+              onChange={(e) => setForm((p) => ({ ...p, dependentsCount: e.target.value }))}
+              placeholder="例: 0人"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1">{ADMIN_EXTRA_LABELS.maritalStatus}</label>
+            <select
+              value={form.maritalStatus}
+              onChange={(e) => setForm((p) => ({ ...p, maritalStatus: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
+            >
+              <option value="">未入力</option>
+              <option value="有">有</option>
+              <option value="無">無</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1">{ADMIN_EXTRA_LABELS.requests}</label>
+            <textarea
+              value={form.requests}
+              onChange={(e) => setForm((p) => ({ ...p, requests: e.target.value }))}
+              rows={3}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 resize-y"
+            />
+          </div>
+        </div>
+
         <div className="flex items-center gap-3 mt-2">
           <button
             onClick={saveEdit}
@@ -284,9 +472,25 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                   {expanded && (
                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {RESUME_FIELDS.map(({ key }) => (
+                      {RESUME_FIELDS.filter(({ key }) => !HISTORY_ARRAY_KEY[key]).map(({ key }) => (
                         <div key={key} className="text-xs">
                           <p className="text-gray-500">{t(`form.fields.${key}`)}</p>
+                          <p className="break-words">{rev.snapshot[key] || '—'}</p>
+                        </div>
+                      ))}
+                      {(['educationHistory', 'workHistoryRows', 'qualificationRows'] as const).map((key) => (
+                        <div key={key} className="text-xs">
+                          <p className="text-gray-500">
+                            {t(`form.fields.${key === 'educationHistory' ? 'education' : key === 'workHistoryRows' ? 'workHistory' : 'qualifications'}`)}
+                          </p>
+                          <p className="break-words whitespace-pre-wrap">
+                            {historyRowsToText(rev.snapshot[key]) || '—'}
+                          </p>
+                        </div>
+                      ))}
+                      {(Object.keys(ADMIN_EXTRA_LABELS) as Array<keyof JisExtraFields>).map((key) => (
+                        <div key={key} className="text-xs">
+                          <p className="text-gray-500">{ADMIN_EXTRA_LABELS[key]}</p>
                           <p className="break-words">{rev.snapshot[key] || '—'}</p>
                         </div>
                       ))}
