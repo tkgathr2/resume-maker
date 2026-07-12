@@ -5,6 +5,7 @@ import { use, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useI18n, LOCALES, type Locale } from '@/lib/i18n';
 import { fetchApplicant } from '@/lib/applicantClient';
+import { SELF_EDIT_ENABLED } from '@/lib/featureFlags';
 
 export default function DonePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
@@ -35,7 +36,7 @@ export default function DonePage({ params }: { params: Promise<{ token: string }
       <h1 className="text-2xl font-bold mb-3">{t('a.done.title')}</h1>
       <p className="text-gray-500 max-w-sm">{t('a.done.message')}</p>
 
-      {editUrl ? (
+      {SELF_EDIT_ENABLED && editUrl ? (
         <div className="w-full max-w-sm mt-6 bg-white rounded-2xl shadow-md p-5 text-left">
           <p className="font-semibold text-sm mb-1">{t('my.done.urlLabel')}</p>
           <p className="text-xs text-red-600 font-semibold mb-3">⚠ {t('my.done.urlNote')}</p>

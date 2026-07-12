@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { SELF_EDIT_ENABLED } from '@/lib/featureFlags';
 
 interface Row {
   id: string;
@@ -142,13 +143,15 @@ export default function AdminPage() {
                         <Link href={`/admin/${r.id}`} className="text-brand font-semibold hover:underline text-sm">
                           {t('admin.detail')} →
                         </Link>
-                        <button
-                          onClick={() => reissueEditToken(r.id)}
-                          className="text-xs font-semibold text-orange-600 hover:underline"
-                        >
-                          {t('admin.reissueEditUrl')}
-                        </button>
-                        {editUrls[r.id] && (
+                        {SELF_EDIT_ENABLED && (
+                          <button
+                            onClick={() => reissueEditToken(r.id)}
+                            className="text-xs font-semibold text-orange-600 hover:underline"
+                          >
+                            {t('admin.reissueEditUrl')}
+                          </button>
+                        )}
+                        {SELF_EDIT_ENABLED && editUrls[r.id] && (
                           <div className="flex items-center gap-1 max-w-[220px]">
                             <code className="text-[10px] break-all">{editUrls[r.id]}</code>
                             <button
@@ -202,25 +205,27 @@ export default function AdminPage() {
                     <p className="mt-1 text-gray-600">{r.submittedAt ? new Date(r.submittedAt).toLocaleString('ja-JP') : '—'}</p>
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <button
-                    onClick={() => reissueEditToken(r.id)}
-                    className="text-xs font-semibold text-orange-600 hover:underline"
-                  >
-                    {t('admin.reissueEditUrl')}
-                  </button>
-                  {editUrls[r.id] && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <code className="text-[10px] break-all flex-1">{editUrls[r.id]}</code>
-                      <button
-                        onClick={() => navigator.clipboard.writeText(editUrls[r.id])}
-                        className="text-[10px] font-semibold text-brand shrink-0"
-                      >
-                        {t('admin.copyUrl')}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {SELF_EDIT_ENABLED && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <button
+                      onClick={() => reissueEditToken(r.id)}
+                      className="text-xs font-semibold text-orange-600 hover:underline"
+                    >
+                      {t('admin.reissueEditUrl')}
+                    </button>
+                    {editUrls[r.id] && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <code className="text-[10px] break-all flex-1">{editUrls[r.id]}</code>
+                        <button
+                          onClick={() => navigator.clipboard.writeText(editUrls[r.id])}
+                          className="text-[10px] font-semibold text-brand shrink-0"
+                        >
+                          {t('admin.copyUrl')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -8,6 +8,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Spinner from '@/components/Spinner';
 import ErrorScreen from '@/components/ErrorScreen';
 import { EMPTY_RESUME, RESUME_FIELDS, REQUIRED_FIELDS, type ResumeData } from '@/lib/resumeFields';
+import { SELF_EDIT_ENABLED } from '@/lib/featureFlags';
 
 export default function MyEditPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
@@ -21,6 +22,7 @@ export default function MyEditPage({ params }: { params: Promise<{ token: string
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (!SELF_EDIT_ENABLED) return;
     fetch(`/api/my/${token}`, { cache: 'no-store' })
       .then(async (res) => {
         if (!res.ok) {
@@ -74,7 +76,7 @@ export default function MyEditPage({ params }: { params: Promise<{ token: string
     }
   };
 
-  if (loadError) {
+  if (!SELF_EDIT_ENABLED || loadError) {
     return <ErrorScreen errorKey="my.invalid.message" showHome={true} />;
   }
 

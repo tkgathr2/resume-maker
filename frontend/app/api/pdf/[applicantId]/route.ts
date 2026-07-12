@@ -4,6 +4,7 @@ import { auth, isStaffEmail } from '@/auth';
 import { verifyToken } from '@/lib/token';
 import { EMPTY_RESUME, type ResumeData } from '@/lib/resumeFields';
 import { renderJisResumePdf, toJisResumeData } from '@/lib/pdf/resumePdf';
+import { SELF_EDIT_ENABLED } from '@/lib/featureFlags';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -11,13 +12,15 @@ export const maxDuration = 60;
 // 認証統合: staff セッション（Googleログイン済みスタッフ）または
 // 求職者本人の editToken（?token=）のハッシュ照合のいずれかで許可する。
 // どちらも無ければ DB を引く前に fail closed で 401 を返す。
+// SELF_EDIT_ENABLED=false のときは本人修正機能自体が非表示のため、
+// editToken（?token=）経路は無効化し staff セッションのみ許可する。
 export async function GET(req: NextRequest, { params }: { params: Promise<{ applicantId: string }> }) {
   const { applicantId } = await params;
 
   const session = await auth();
   const staffEmail = session?.user?.email;
   const isStaff = !!staffEmail && isStaffEmail(staffEmail);
-  const token = req.nextUrl.searchParams.get('token');
+  const token = SELF_EDIT_ENABLED ? req.nextUrl.searchParams.get('token') : null;
 
   if (!isStaff && !token) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

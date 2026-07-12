@@ -4,6 +4,7 @@ import { findApplicantByEditToken } from '@/lib/applicantApi';
 import { rateLimit, clientIp } from '@/lib/rateLimit';
 import { EMPTY_RESUME, type ResumeData } from '@/lib/resumeFields';
 import { notifySelfEdit } from '@/lib/slackNotify';
+import { SELF_EDIT_ENABLED } from '@/lib/featureFlags';
 
 export const runtime = 'nodejs';
 
@@ -12,6 +13,9 @@ const RATE_WINDOW_MS = 60_000;
 
 // 本人「後から修正」: トークン照合で自レコードのみ読み書き可能。
 export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
+  if (!SELF_EDIT_ENABLED) {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  }
   if (!rateLimit(`my:${clientIp(req)}`, RATE_LIMIT, RATE_WINDOW_MS)) {
     return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
   }
@@ -25,6 +29,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
+  if (!SELF_EDIT_ENABLED) {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  }
   if (!rateLimit(`my:${clientIp(req)}`, RATE_LIMIT, RATE_WINDOW_MS)) {
     return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
   }

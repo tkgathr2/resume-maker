@@ -4,6 +4,7 @@ import { findApplicantByToken } from '@/lib/applicantApi';
 import { EMPTY_RESUME, REQUIRED_FIELDS } from '@/lib/resumeFields';
 import { generateEditToken, hashToken } from '@/lib/token';
 import { notifySubmit } from '@/lib/slackNotify';
+import { SELF_EDIT_ENABLED } from '@/lib/featureFlags';
 
 export const runtime = 'nodejs';
 
@@ -61,6 +62,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
   }
 
   // 「後から修正」本人トークンを発行（失敗しても提出自体は成功扱い）。
+  // DB への editTokenHash 保存は SELF_EDIT_ENABLED に関わらず常に行う（CA再発行の将来利用に温存）。
+  // レスポンスへの editUrl 同梱は SELF_EDIT_ENABLED=false のときは行わない（本人修正機能は非表示）。
   let editUrl: string | undefined;
   try {
     const editToken = generateEditToken();
@@ -68,7 +71,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       where: { id: a.id },
       data: { editTokenHash: hashToken(editToken) },
     });
-    editUrl = `${req.nextUrl.origin}/my/${editToken}`;
+    if (SELF_EDIT_ENABLED) {
+      editUrl = `${req.nextUrl.origin}/my/${editToken}`;
+    }
   } catch (e) {
     console.error('Failed to issue edit token:', e);
   }
