@@ -20,6 +20,7 @@ export default function SelfUpload() {
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   const ca = searchParams.get('ca');
 
@@ -47,6 +48,11 @@ export default function SelfUpload() {
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    await processFile(file);
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const processFile = async (file: File) => {
     setBusy(true);
     setError(null);
     try {
@@ -78,8 +84,30 @@ export default function SelfUpload() {
       void uploadCard(activeToken, dataUrl);
     } finally {
       setBusy(false);
-      if (fileRef.current) fileRef.current.value = '';
     }
+  };
+
+  const onDrop = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setDragging(false);
+    if (busy) return;
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    void processFile(file);
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+  };
+
+  const onDragEnter = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setDragging(true);
+  };
+
+  const onDragLeave = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setDragging(false);
   };
 
   return (
@@ -127,8 +155,14 @@ export default function SelfUpload() {
         ) : (
           <button
             onClick={() => fileRef.current?.click()}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            onDragEnter={onDragEnter}
+            onDragLeave={onDragLeave}
             disabled={busy}
-            className="w-full max-w-sm rounded-2xl border-4 border-dashed border-brand/40 bg-white hover:bg-brand/5 py-14 flex flex-col items-center gap-4 transition-colors disabled:opacity-60"
+            className={`w-full max-w-sm rounded-2xl border-4 border-dashed py-14 flex flex-col items-center gap-4 transition-colors disabled:opacity-60 ${
+              dragging ? 'border-brand bg-brand/10' : 'border-brand/40 bg-white hover:bg-brand/5'
+            }`}
           >
             {/* カードのイラスト（インラインSVG） */}
             <svg width="120" height="78" viewBox="0 0 120 78" fill="none" aria-hidden>
