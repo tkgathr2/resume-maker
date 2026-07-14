@@ -60,6 +60,18 @@ export default function LoadingPage({ params }: { params: Promise<{ token: strin
       </div>
       <h1 className="text-lg font-bold mb-2">{t('a.loading.title')}</h1>
       <p className="text-gray-500 text-sm">{t('a.loading.subtitle')}</p>
+
+      <button
+        onClick={() => {
+          const searchParams = new URLSearchParams(window.location.search);
+          const ca = searchParams.get('ca');
+          const backUrl = ca ? `/?ca=${encodeURIComponent(ca)}` : '/';
+          router.push(backUrl);
+        }}
+        className="mt-8 text-gray-400 text-sm underline hover:text-gray-600"
+      >
+        {t('a.upload.retake')}
+      </button>
     </main>
   );
 }
