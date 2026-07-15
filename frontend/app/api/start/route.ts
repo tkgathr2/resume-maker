@@ -21,6 +21,17 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const locale = ['ja', 'ne', 'en', 'vi'].includes(body?.locale) ? body.locale : 'ja';
 
+  // CA固有URL（/?ca=<code>）で来た求職者は、発行時に担当CAを確定させる。
+  // 以降の画面遷移でクエリが落ちても紐付けが残るよう、URLの引き回しに依存させない。
+  const caParam = typeof body?.ca === 'string' ? body.ca : null;
+  const ca = caParam
+    ? await prisma.cA.findFirst({
+        where: { OR: [{ code: caParam }, { id: caParam }, { name: caParam }] },
+        select: { id: true },
+      })
+    : null;
+  if (caParam && !ca) console.warn('[start] CA not found for param:', caParam);
+
   const token = newInviteToken();
   const applicant = await prisma.applicant.create({
     data: {
@@ -30,6 +41,7 @@ export async function POST(req: NextRequest) {
       tokenExpiresAt: new Date(Date.now() + TOKEN_TTL_HOURS * 3600_000),
       status: 'opened',
       createdBy: 'self',
+      caId: ca?.id ?? null,
     },
   });
   await prisma.auditEvent.create({

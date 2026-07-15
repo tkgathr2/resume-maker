@@ -63,3 +63,6 @@ __pycache__/
 *.pyc
 .env
 .env.local
+
+# oh-my-claudecode のローカル状態（マシン固有・共有不要）
+.omc/

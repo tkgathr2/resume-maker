@@ -2,7 +2,7 @@
 
 // ローディング画面: ぐるぐる + 疑似%進捗（実測3秒に合わせ0→90%を演出、完了で100%）。
 import { use, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
 import { fetchApplicant } from '@/lib/applicantClient';
 
@@ -10,8 +10,13 @@ export default function LoadingPage({ params }: { params: Promise<{ token: strin
   const { token } = use(params);
   const { t } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [percent, setPercent] = useState(0);
   const doneRef = useRef(false);
+  // CA固有URL（?ca=<code>）を次の画面へ引き継ぐ（担当CAの紐付けは /api/start 側で
+  // 確定済みだが、以降の画面もURLだけで担当が分かる状態に揃えておく）。
+  const ca = searchParams.get('ca');
+  const formUrl = `/a/${token}/form${ca ? `?ca=${encodeURIComponent(ca)}` : ''}`;
 
   useEffect(() => {
     // 初期状態確認: OCRが既に完了していたら即座にformへ
@@ -20,7 +25,7 @@ export default function LoadingPage({ params }: { params: Promise<{ token: strin
       if (!('error' in r) && (r.ocrStatus === 'done' || r.ocrStatus === 'failed')) {
         doneRef.current = true;
         setPercent(100);
-        setTimeout(() => router.replace(`/a/${token}/form`), 100);
+        setTimeout(() => router.replace(formUrl), 100);
         return true;
       }
       return false;
@@ -53,7 +58,7 @@ export default function LoadingPage({ params }: { params: Promise<{ token: strin
       if (finished && !doneRef.current) {
         doneRef.current = true;
         setPercent(100);
-        setTimeout(() => router.replace(`/a/${token}/form`), 450);
+        setTimeout(() => router.replace(formUrl), 450);
       }
     }, 800);
 
@@ -62,7 +67,7 @@ export default function LoadingPage({ params }: { params: Promise<{ token: strin
       clearInterval(poll);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, formUrl]);
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6">
@@ -81,10 +86,7 @@ export default function LoadingPage({ params }: { params: Promise<{ token: strin
 
       <button
         onClick={() => {
-          const searchParams = new URLSearchParams(window.location.search);
-          const ca = searchParams.get('ca');
-          const backUrl = ca ? `/?ca=${encodeURIComponent(ca)}` : '/';
-          router.push(backUrl);
+          router.push(ca ? `/?ca=${encodeURIComponent(ca)}` : '/');
         }}
         className="mt-8 text-gray-400 text-sm underline hover:text-gray-600"
       >

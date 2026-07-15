@@ -63,7 +63,7 @@ export default function SelfUpload() {
         const res = await fetch('/api/start', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ locale }),
+          body: JSON.stringify({ locale, ca: caRef.current }),
         });
         if (!res.ok) {
           setError(t(res.status === 429 ? 'landing.tooMany' : 'landing.startFailed'));
