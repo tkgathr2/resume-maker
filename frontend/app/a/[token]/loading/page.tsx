@@ -14,6 +14,23 @@ export default function LoadingPage({ params }: { params: Promise<{ token: strin
   const doneRef = useRef(false);
 
   useEffect(() => {
+    // 初期状態確認: OCRが既に完了していたら即座にformへ
+    const checkInitial = async () => {
+      const r = await fetchApplicant(token);
+      if (!('error' in r) && (r.ocrStatus === 'done' || r.ocrStatus === 'failed')) {
+        doneRef.current = true;
+        setPercent(100);
+        setTimeout(() => router.replace(`/a/${token}/form`), 100);
+        return true;
+      }
+      return false;
+    };
+
+    let completed = false;
+    checkInitial().then((done) => {
+      completed = done;
+    });
+
     // 疑似進捗: 3.5秒かけて0→90%（イージング）。完了検知で100%へ。
     const start = Date.now();
     const anim = setInterval(() => {
@@ -26,6 +43,7 @@ export default function LoadingPage({ params }: { params: Promise<{ token: strin
     // OCR完了ポーリング（800ms間隔・最大30秒 → 失敗でもフォームへ）
     const deadline = Date.now() + 30_000;
     const poll = setInterval(async () => {
+      if (completed) return;
       const r = await fetchApplicant(token);
       const finished =
         ('error' in r) ||

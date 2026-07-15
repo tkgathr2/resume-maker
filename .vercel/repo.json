@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_rQ9ODQoKk7SsYYNG2ogu3kfFrLqL",
+      "name": "resume-maker",
+      "directory": "frontend",
+      "orgId": "team_HCFohEhWeRbk5gTvqF5idqyU"
+    }
+  ]
+}
