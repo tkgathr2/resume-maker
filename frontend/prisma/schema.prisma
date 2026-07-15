@@ -36,6 +36,7 @@ model Applicant {
   draft           Json? // 求職者の自動保存下書き
   submittedData   Json? // 提出確定データ（以降は求職者側読取専用）
   submittedAt     DateTime?
+  templateType    String    @default("jis") // jis / marathu
   createdBy       String? // スタッフのメール
   caId            String?
   ca              CA?       @relation(fields: [caId], references: [id], onDelete: SetNull)
