@@ -49,8 +49,10 @@
       "send": "OK, gửi đi",
       "edit": "Sửa lại",
       "building": "Đang tạo sơ yếu lý lịch...",
-      "failed": "Không thể hiển thị sơ yếu lý lịch. Vui lòng liên hệ với nhân viên phụ trách.",
-      "openPdf": "Mở PDF trong tab mới"
+      "failed": "Không thể hiển thị sơ yếu lý lịch. Vui lòng thử lại.",
+      "openPdf": "Mở PDF trong tab mới",
+      "retry": "Tải lại",
+      "sendFailed": "Không gửi được. Vui lòng kiểm tra kết nối và thử lại."
     },
     "done": {
       "title": "Đã gửi thành công",

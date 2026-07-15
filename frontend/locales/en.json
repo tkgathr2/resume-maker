@@ -49,8 +49,10 @@
       "send": "OK, send it",
       "edit": "Edit",
       "building": "Creating your resume...",
-      "failed": "We could not display your resume. Please contact your staff member.",
-      "openPdf": "Open the PDF in a new tab"
+      "failed": "We could not display your resume. Please try again.",
+      "openPdf": "Open the PDF in a new tab",
+      "retry": "Reload",
+      "sendFailed": "We could not send it. Please check your connection and try again."
     },
     "done": {
       "title": "Submitted successfully",

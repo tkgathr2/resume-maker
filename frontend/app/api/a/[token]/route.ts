@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { findApplicantByToken } from '@/lib/applicantApi';
-import { EMPTY_RESUME, type ResumeData } from '@/lib/resumeFields';
+import { findApplicantByToken, buildPrefill } from '@/lib/applicantApi';
 
 export const runtime = 'nodejs';
 
@@ -17,25 +16,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     await prisma.auditEvent.create({ data: { applicantId: a.id, type: 'opened' } });
   }
 
-  // プリフィル: OCR結果 ← 下書きで上書き（本人修正が最優先）
+  // プリフィル: OCR結果 ← 下書きで上書き（本人修正が最優先）。
+  // 確認画面のPDFと同じ値になるよう、組み立ては applicantApi に集約している。
   const ocr = (a.ocrResult ?? {}) as Record<string, unknown>;
-  const draft = (a.draft ?? {}) as Partial<ResumeData>;
-  const prefill: ResumeData = { ...EMPTY_RESUME };
-  const map: Record<string, keyof ResumeData> = {
-    fullName: 'fullName',
-    birthDate: 'birthDate',
-    gender: 'gender',
-    nationality: 'nationality',
-    address: 'address',
-    visaStatus: 'visaStatus',
-    visaExpiry: 'visaExpiry',
-    workRestriction: 'workRestriction',
-  };
-  for (const [ocrKey, formKey] of Object.entries(map)) {
-    const v = ocr[ocrKey];
-    if (typeof v === 'string' && v) prefill[formKey] = v;
-  }
-  Object.assign(prefill, draft);
+  const prefill = buildPrefill(a);
 
   return NextResponse.json({
     status: a.status,
