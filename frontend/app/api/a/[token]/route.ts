@@ -29,6 +29,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     address: 'address',
     visaStatus: 'visaStatus',
     visaExpiry: 'visaExpiry',
+    workRestriction: 'workRestriction',
   };
   for (const [ocrKey, formKey] of Object.entries(map)) {
     const v = ocr[ocrKey];
