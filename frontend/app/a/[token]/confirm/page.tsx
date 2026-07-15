@@ -44,7 +44,6 @@ export default function ConfirmPage() {
         setError(data.error || '提出失敗');
         return;
       }
-      // 提出成功
       window.location.href = `/a/${token}/done`;
     } catch (e) {
       setError(String(e));
@@ -58,57 +57,82 @@ export default function ConfirmPage() {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>履歴書確認</h1>
+    <div style={{ padding: '40px 20px', fontFamily: 'sans-serif', maxWidth: '900px', margin: '0 auto' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '40px', fontSize: '24px', fontWeight: 'bold' }}>
+        履歴書確認
+      </h1>
 
-      {error && <div style={{ color: 'red', marginBottom: '20px' }}>エラー: {error}</div>}
-      {loading && <div>PDF読み込み中...</div>}
+      {error && <div style={{ color: '#d32f2f', marginBottom: '20px', padding: '12px', backgroundColor: '#ffebee', borderRadius: '4px' }}>エラー: {error}</div>}
+
+      {loading && <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>PDF読み込み中...</div>}
 
       {pdfUrl && (
-        <div style={{ marginBottom: '20px' }}>
+        <>
           <iframe
             src={pdfUrl}
             style={{
               width: '100%',
-              height: '600px',
-              border: '1px solid #ccc',
+              height: '700px',
+              border: '1px solid #ddd',
               borderRadius: '4px',
+              marginBottom: '40px',
             }}
             title="履歴書プレビュー"
           />
-        </div>
-      )}
 
-      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-        <button
-          onClick={handleConfirm}
-          disabled={submitting || !pdfUrl}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
+          <div style={{
+            backgroundColor: '#f5f5f5',
+            padding: '20px',
             borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          {submitting ? '送信中...' : 'OK確認'}
-        </button>
-        <button
-          onClick={handleEdit}
-          disabled={submitting}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          修正する
-        </button>
-      </div>
+            marginBottom: '30px',
+            textAlign: 'center',
+          }}>
+            <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', marginBottom: '8px' }}>
+              これでOK? 送りますか?
+            </p>
+            <p style={{ fontSize: '14px', color: '#666', margin: '0' }}>
+              修正が必要な場合は「修正する」ボタンをクリック
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button
+              onClick={handleConfirm}
+              disabled={submitting}
+              style={{
+                padding: '14px 32px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                backgroundColor: '#4caf50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                opacity: submitting ? 0.6 : 1,
+              }}
+            >
+              {submitting ? '送信中...' : 'OK 送ります'}
+            </button>
+            <button
+              onClick={handleEdit}
+              disabled={submitting}
+              style={{
+                padding: '14px 32px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                backgroundColor: '#f44336',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                opacity: submitting ? 0.6 : 1,
+              }}
+            >
+              修正する
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
