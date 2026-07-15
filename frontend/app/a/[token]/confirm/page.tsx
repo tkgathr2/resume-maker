@@ -112,9 +112,9 @@ export default function ConfirmPage({ params }: { params: Promise<{ token: strin
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-6 sm:py-8">
+    <main className="min-h-screen bg-gray-50 px-4 py-6 md:py-7 lg:py-8">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-xl font-bold mb-1">{t('a.confirm.title')}</h1>
+        <h1 className="text-xl md:text-2xl font-bold mb-1">{t('a.confirm.title')}</h1>
         <p className="text-sm text-gray-500 mb-4">{t('a.confirm.subtitle')}</p>
 
         <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-5">
@@ -123,7 +123,7 @@ export default function ConfirmPage({ params }: { params: Promise<{ token: strin
               <p className="text-sm text-red-600 mb-4">{t('a.confirm.failed')}</p>
               <button
                 onClick={() => void loadPdf()}
-                className="bg-white hover:bg-gray-50 text-gray-700 font-bold rounded-xl px-6 py-3 border border-gray-300 w-full sm:w-auto"
+                className="bg-white hover:bg-gray-50 text-gray-700 font-bold rounded-xl px-6 py-3 border border-gray-300 w-full md:w-auto"
               >
                 {t('a.confirm.retry')}
               </button>
@@ -134,7 +134,7 @@ export default function ConfirmPage({ params }: { params: Promise<{ token: strin
               <iframe
                 src={pdfUrl}
                 title={t('a.confirm.title')}
-                className="w-full aspect-[1/1.414] max-h-[70vh] border-0 bg-gray-100"
+                className="w-full aspect-[1/1.414] max-h-[50vh] sm:max-h-[65vh] lg:max-h-[75vh] border-0 bg-gray-100"
               />
               <div className="border-t border-gray-100 p-3">
                 <a
@@ -155,23 +155,23 @@ export default function ConfirmPage({ params }: { params: Promise<{ token: strin
           )}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-md p-5 text-center">
-          <p className="text-lg font-bold mb-1">{t('a.confirm.question')}</p>
+        <div className="bg-white rounded-2xl shadow-md p-5 md:p-6 text-center">
+          <p className="text-lg md:text-xl font-bold mb-1">{t('a.confirm.question')}</p>
           <p className="text-sm text-gray-500 mb-5">{t('a.confirm.hint')}</p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:justify-center">
+          <div className="flex flex-col md:flex-row gap-3 md:justify-center md:gap-4">
             <button
               onClick={handleSend}
               // PDFを出し切る前に押せると「見せてから送る」が成立しないため、
               // 描画中は押させない（描画に失敗した時だけは、送信を塞いで詰ませない）。
               disabled={sending || (!pdfUrl && !pdfFailed)}
-              className="bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-bold rounded-xl px-8 py-4 w-full sm:w-auto order-1 sm:order-2"
+              className="bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-bold rounded-xl px-6 py-5 md:px-8 md:py-4 w-full md:w-auto order-1 md:order-2 transition-colors"
             >
               {sending ? <Spinner size="sm" /> : t('a.confirm.send')}
             </button>
             <button
               onClick={() => router.push(formUrl)}
               disabled={sending}
-              className="bg-white hover:bg-gray-50 disabled:opacity-50 text-gray-700 font-bold rounded-xl px-8 py-4 border border-gray-300 w-full sm:w-auto order-2 sm:order-1"
+              className="bg-white hover:bg-gray-50 disabled:opacity-50 text-gray-700 font-bold rounded-xl px-6 py-5 md:px-8 md:py-4 border border-gray-300 w-full md:w-auto order-2 md:order-1 transition-colors"
             >
               {t('a.confirm.edit')}
             </button>
