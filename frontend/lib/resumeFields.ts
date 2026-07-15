@@ -98,14 +98,14 @@ export const EMPTY_JIS_HISTORY: JisHistoryFields = {
 // 志望動機・自己PR以外の残り4項目（配偶者・扶養家族数・通勤時間・本人希望記入欄）。
 export interface JisExtraFields {
   maritalStatus: string; // 配偶者（有・無）
-  dependentsCount: string; // 扶養家族数（配偶者を除く）
+  dependents: string; // 扶養家族数（配偶者を除く）
   commuteTime: string; // 通勤時間
   requests: string; // 本人希望記入欄
 }
 
 export const EMPTY_JIS_EXTRA: JisExtraFields = {
   maritalStatus: '',
-  dependentsCount: '',
+  dependents: '',
   commuteTime: '',
   requests: '',
 };
@@ -132,7 +132,7 @@ export function pickJisExtra(source: Record<string, unknown> | null | undefined)
   };
   return {
     maritalStatus: pickStr('maritalStatus'),
-    dependentsCount: pickStr('dependentsCount'),
+    dependents: pickStr('dependents'),
     commuteTime: pickStr('commuteTime'),
     requests: pickStr('requests'),
     educationHistory: sanitizeHistoryRows(src.educationHistory),

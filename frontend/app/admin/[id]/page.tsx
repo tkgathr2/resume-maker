@@ -31,7 +31,7 @@ const HISTORY_ARRAY_KEY: Partial<Record<keyof ResumeData, keyof JisHistoryFields
 // 多言語locale側は変更せず、この画面内だけの日本語固定ラベルとする。
 const ADMIN_EXTRA_LABELS: Record<keyof JisExtraFields, string> = {
   commuteTime: '通勤時間',
-  dependentsCount: '扶養家族数（配偶者を除く）',
+  dependents: '扶養家族数（配偶者を除く）',
   maritalStatus: '配偶者',
   requests: '本人希望記入欄',
 };
@@ -392,10 +392,10 @@ export default function AdminDetailPage({ params }: { params: Promise<{ id: stri
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-1">{ADMIN_EXTRA_LABELS.dependentsCount}</label>
+            <label className="block text-sm font-semibold mb-1">{ADMIN_EXTRA_LABELS.dependents}</label>
             <input
-              value={form.dependentsCount}
-              onChange={(e) => setForm((p) => ({ ...p, dependentsCount: e.target.value }))}
+              value={form.dependents}
+              onChange={(e) => setForm((p) => ({ ...p, dependents: e.target.value }))}
               placeholder="例: 0人"
               className="w-full rounded-lg border border-gray-300 px-3 py-2"
             />

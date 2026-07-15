@@ -46,6 +46,13 @@ model Applicant {
   events          AuditEvent[]
   revisions       ApplicantRevision[]
 
+  // === JIS履歴書の追加項目（PDF生成用）===
+  commuteTime     String? // 約45分
+  dependents      String? // 0人
+  maritalStatus   String? // 無/有
+  requests        String? // 特になし
+  pdfGeneratedAt  DateTime? // PDF生成日時
+
   @@index([status])
   @@index([caId])
 }
