@@ -31,12 +31,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     return NextResponse.json({ error: 'missing_required', fields: missing }, { status: 422 });
   }
 
-  // CA 名から caId を取得
-  const caName = req.nextUrl.searchParams.get('ca');
-  let caId: string | null = null;
-  if (caName) {
-    const ca = await prisma.cA.findUnique({ where: { name: caName } });
-    if (ca) caId = ca.id;
+  // CA固有URL（?ca=<code>）の担当CAを紐付ける。
+  // 呼び出し側が code / caId / CA名 のどれを渡してきても解決できるようにする
+  // （以前フォームは lookup 済みの caId を渡しており、name 一致では常に外れていた）。
+  const caParam = req.nextUrl.searchParams.get('ca');
+  let ca = caParam
+    ? await prisma.cA.findFirst({
+        where: { OR: [{ code: caParam }, { id: caParam }, { name: caParam }] },
+        select: { id: true, name: true },
+      })
+    : null;
+  if (caParam && !ca) console.warn('[submit] CA not found for param:', caParam);
+  // ?ca= が無い提出で、招待時にスタッフが設定した担当CAを消さない
+  if (!ca && a.caId) {
+    ca = await prisma.cA.findUnique({ where: { id: a.caId }, select: { id: true, name: true } });
   }
 
   const updatedApplicant = await prisma.applicant.update({
@@ -46,7 +54,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       submittedAt: new Date(),
       status: 'submitted',
       draft: clean,
-      caId,
+      caId: ca?.id ?? null,
       // 本人アップロード（事前登録なし）は本人確定の氏名を管理用の名前に反映
       ...(a.createdBy === 'self' && clean.fullName?.trim()
         ? { displayName: clean.fullName.trim().slice(0, 100) }
@@ -56,7 +64,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
   await prisma.auditEvent.create({ data: { applicantId: a.id, type: 'submitted' } });
 
   try {
-    await notifySubmit(updatedApplicant.displayName, caName, updatedApplicant.id);
+    await notifySubmit(updatedApplicant.displayName, ca?.name ?? null, updatedApplicant.id);
   } catch (e) {
     console.error('Slack notify (submit) failed:', e);
   }

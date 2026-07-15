@@ -9,7 +9,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Spinner from '@/components/Spinner';
 import ErrorScreen from '@/components/ErrorScreen';
 import { EMPTY_RESUME, RESUME_FIELDS, REQUIRED_FIELDS, type ResumeData } from '@/lib/resumeFields';
-import { fetchApplicant, saveDraft, submitResume } from '@/lib/applicantClient';
+import { fetchApplicant, saveDraft } from '@/lib/applicantClient';
 
 const LOW_CONFIDENCE = 0.9;
 
@@ -68,6 +68,8 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
       });
     };
 
+  // 「送信」＝ここでは提出せず、確認画面へ進む。
+  // できあがった履歴書PDFを本人に見せて「これでOK？」を確認してから /submit を叩く（確認画面側）。
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const nextErrors: Record<string, boolean> = {};
@@ -83,35 +85,12 @@ export default function ApplicantFormPage({ params }: { params: Promise<{ token:
       return;
     }
     setSending(true);
-    let caId: string | undefined;
+    // デバウンス保存が未発火でも確認画面のPDFに最新が載るよう、ここで確実に保存し切る
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    await saveDraft(token, form);
+    // CA固有URL（?ca=<code>）は確認画面へ引き継ぐ（提出時に担当CAとして紐付ける）
     const caCode = searchParams.get('ca');
-    if (caCode) {
-      try {
-        const lookupRes = await fetch(`/api/admin/cas/lookup?code=${encodeURIComponent(caCode)}`);
-        if (lookupRes.ok) {
-          const { caId: resolvedId } = await lookupRes.json();
-          caId = resolvedId;
-        }
-      } catch (e) {
-        console.warn('Failed to lookup CA code:', e);
-      }
-    }
-    const res = await submitResume(token, form, caId);
-    setSending(false);
-    if (res.ok) {
-      showToast('Resume submitted successfully', 'success');
-      const doneUrl = res.editUrl ? `/a/${token}/done?editUrl=${encodeURIComponent(res.editUrl)}` : `/a/${token}/done`;
-      router.replace(doneUrl);
-    } else if (res.error) {
-      showToast(`Error: ${res.error}`, 'error');
-      if (res.fields?.length) {
-        const fieldErrors: Record<string, string> = {};
-        res.fields.forEach((f) => {
-          fieldErrors[f] = 'Invalid or required';
-        });
-        setServerErrors(fieldErrors);
-      }
-    }
+    router.push(`/a/${token}/confirm${caCode ? `?ca=${encodeURIComponent(caCode)}` : ''}`);
   };
 
   if (loadError) {

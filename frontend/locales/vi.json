@@ -41,6 +41,17 @@
       "saved": "Đã lưu",
       "manualInputRequired": "Vui lòng tự điền tất cả các mục."
     },
+    "confirm": {
+      "title": "Gửi bản sơ yếu lý lịch này",
+      "subtitle": "Đây là sơ yếu lý lịch đã hoàn thành của bạn. Vui lòng kiểm tra kỹ nội dung.",
+      "question": "Nội dung này đã ổn chưa? Gửi đi nhé?",
+      "hint": "Nếu có chỗ nào cần sửa, hãy nhấn \"Sửa lại\".",
+      "send": "OK, gửi đi",
+      "edit": "Sửa lại",
+      "building": "Đang tạo sơ yếu lý lịch...",
+      "failed": "Không thể hiển thị sơ yếu lý lịch. Vui lòng liên hệ với nhân viên phụ trách.",
+      "openPdf": "Mở PDF trong tab mới"
+    },
     "done": {
       "title": "Đã gửi thành công",
       "message": "Cảm ơn bạn! Nhân viên sẽ kiểm tra và hoàn thiện hồ sơ của bạn. Bạn có thể đóng trang này."

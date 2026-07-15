@@ -225,7 +225,7 @@ function ResumeDoc({ data }: { data: JisResumeData }) {
             <Text style={s.halfLabel}>通勤時間</Text>
             <Text style={s.halfValue}>{data.commuteTime || ' '}</Text>
             <Text style={s.halfLabel}>扶養家族数</Text>
-            <Text style={s.halfValue}>{data.dependents || ' '}</Text>
+            <Text style={s.halfValue}>{data.dependentsCount || ' '}</Text>
           </View>
           <View style={s.rowLast}>
             <Text style={s.halfLabel}>配偶者</Text>

@@ -1,138 +1,160 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+// 画面③: 提出前の最終確認（母語）。できあがった履歴書PDFを見せて「これでOK？送りますか？」を問う。
+// ここで送信を押して初めて /submit が走る（＝中身を見ないまま送信されるのを防ぐ）。
+// PDF は未提出なので下書き（draft）から描画する。
+import { use, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useI18n, LOCALES, type Locale } from '@/lib/i18n';
+import { useToast } from '@/lib/useToast';
+import Spinner from '@/components/Spinner';
+import ErrorScreen from '@/components/ErrorScreen';
+import { EMPTY_RESUME, type ResumeData } from '@/lib/resumeFields';
+import { fetchApplicant, submitResume } from '@/lib/applicantClient';
 
-export default function ConfirmPage() {
-  const params = useParams();
-  const token = params.token as string;
+export default function ConfirmPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = use(params);
+  const { t, setLocale } = useI18n();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { show: showToast } = useToast();
+  // CA固有URL（?ca=<code>）はフォームから引き継ぎ、提出時にそのまま渡す（担当CAの紐付け）。
+  const caCode = searchParams.get('ca');
+  const formUrl = `/a/${token}/form${caCode ? `?ca=${encodeURIComponent(caCode)}` : ''}`;
 
+  const [form, setForm] = useState<ResumeData>(EMPTY_RESUME);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [pdfFailed, setPdfFailed] = useState(false);
 
   useEffect(() => {
-    const loadPdf = async () => {
-      try {
-        setLoading(true);
-        const url = `/api/a/${token}/pdf-preview`;
-        const res = await fetch(url);
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({ error: 'unknown' }));
-          setError(data.error || 'PDF読み込み失敗');
-          return;
-        }
-        const blob = await res.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        setPdfUrl(objectUrl);
-      } catch (e) {
-        setError(String(e));
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadPdf();
-  }, [token]);
+    let objectUrl: string | null = null;
+    let cancelled = false;
 
-  const handleConfirm = async () => {
-    try {
-      setSubmitting(true);
-      const res = await fetch(`/api/a/${token}/submit-resume`, { method: 'POST' });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'unknown' }));
-        setError(data.error || '提出失敗');
+    (async () => {
+      const r = await fetchApplicant(token);
+      if (cancelled) return;
+      if ('error' in r) {
+        setLoadError(r.error === 'http_404' ? 'notFound' : r.error);
         return;
       }
-      window.location.href = `/a/${token}/done`;
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setSubmitting(false);
+      if (r.submitted) {
+        router.replace(`/a/${token}/done`);
+        return;
+      }
+      if (LOCALES.includes(r.locale as Locale)) setLocale(r.locale as Locale);
+      setForm({ ...EMPTY_RESUME, ...r.prefill });
+      setReady(true);
+
+      try {
+        const res = await fetch(`/api/a/${token}/pdf-preview`, { cache: 'no-store' });
+        if (cancelled) return;
+        if (!res.ok) {
+          setPdfFailed(true);
+          return;
+        }
+        objectUrl = URL.createObjectURL(await res.blob());
+        setPdfUrl(objectUrl);
+      } catch {
+        if (!cancelled) setPdfFailed(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  const handleSend = async () => {
+    setSending(true);
+    const res = await submitResume(token, form, caCode ?? undefined);
+    setSending(false);
+    if (!res.ok) {
+      showToast(`Error: ${res.error ?? 'unknown'}`, 'error');
+      // 必須項目が欠けている場合はフォームへ戻して直してもらう
+      if (res.fields?.length) router.push(formUrl);
+      return;
     }
+    const doneUrl = res.editUrl
+      ? `/a/${token}/done?editUrl=${encodeURIComponent(res.editUrl)}`
+      : `/a/${token}/done`;
+    router.replace(doneUrl);
   };
 
-  const handleEdit = () => {
-    window.history.back();
-  };
+  if (loadError) {
+    return (
+      <ErrorScreen
+        errorKey={loadError === 'notFound' ? 'a.expired.message' : 'common.loadFailed'}
+        showHome={true}
+      />
+    );
+  }
+
+  if (!ready) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <Spinner />
+      </main>
+    );
+  }
 
   return (
-    <div style={{ padding: '40px 20px', fontFamily: 'sans-serif', maxWidth: '900px', margin: '0 auto' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '40px', fontSize: '24px', fontWeight: 'bold' }}>
-        履歴書確認
-      </h1>
+    <main className="min-h-screen bg-gray-50 px-4 py-8">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-xl font-bold mb-1">{t('a.confirm.title')}</h1>
+        <p className="text-sm text-gray-500 mb-5">{t('a.confirm.subtitle')}</p>
 
-      {error && <div style={{ color: '#d32f2f', marginBottom: '20px', padding: '12px', backgroundColor: '#ffebee', borderRadius: '4px' }}>エラー: {error}</div>}
+        <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-5">
+          {pdfFailed ? (
+            <p className="p-6 text-sm text-red-600">{t('a.confirm.failed')}</p>
+          ) : pdfUrl ? (
+            <>
+              <iframe src={pdfUrl} title={t('a.confirm.title')} className="w-full h-[70vh] border-0" />
+              {/* iframe内のPDFが開かない端末（iOS Safari 等）向けの逃げ道 */}
+              <div className="border-t border-gray-100 p-3 text-center">
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold text-brand"
+                >
+                  {t('a.confirm.openPdf')} ↗
+                </a>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 p-10">
+              <Spinner />
+              <p className="text-sm text-gray-500">{t('a.confirm.building')}</p>
+            </div>
+          )}
+        </div>
 
-      {loading && <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>PDF読み込み中...</div>}
-
-      {pdfUrl && (
-        <>
-          <iframe
-            src={pdfUrl}
-            style={{
-              width: '100%',
-              height: '700px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              marginBottom: '40px',
-            }}
-            title="履歴書プレビュー"
-          />
-
-          <div style={{
-            backgroundColor: '#f5f5f5',
-            padding: '20px',
-            borderRadius: '4px',
-            marginBottom: '30px',
-            textAlign: 'center',
-          }}>
-            <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', marginBottom: '8px' }}>
-              これでOK? 送りますか?
-            </p>
-            <p style={{ fontSize: '14px', color: '#666', margin: '0' }}>
-              修正が必要な場合は「修正する」ボタンをクリック
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <div className="bg-white rounded-2xl shadow-md p-5 text-center">
+          <p className="text-lg font-bold mb-1">{t('a.confirm.question')}</p>
+          <p className="text-sm text-gray-500 mb-5">{t('a.confirm.hint')}</p>
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-center">
             <button
-              onClick={handleConfirm}
-              disabled={submitting}
-              style={{
-                padding: '14px 32px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                backgroundColor: '#4caf50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                opacity: submitting ? 0.6 : 1,
-              }}
+              onClick={handleSend}
+              disabled={sending}
+              className="bg-brand hover:bg-brand-dark disabled:opacity-50 text-white font-bold rounded-xl px-8 py-3 order-1 sm:order-2"
             >
-              {submitting ? '送信中...' : 'OK 送ります'}
+              {sending ? <Spinner size="sm" /> : t('a.confirm.send')}
             </button>
             <button
-              onClick={handleEdit}
-              disabled={submitting}
-              style={{
-                padding: '14px 32px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                backgroundColor: '#f44336',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                opacity: submitting ? 0.6 : 1,
-              }}
+              onClick={() => router.push(formUrl)}
+              disabled={sending}
+              className="bg-white hover:bg-gray-50 disabled:opacity-50 text-gray-700 font-bold rounded-xl px-8 py-3 border border-gray-300 order-2 sm:order-1"
             >
-              修正する
+              {t('a.confirm.edit')}
             </button>
           </div>
-        </>
-      )}
-    </div>
+        </div>
+      </div>
+    </main>
   );
 }

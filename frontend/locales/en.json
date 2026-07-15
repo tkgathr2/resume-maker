@@ -41,6 +41,17 @@
       "saved": "Saved",
       "manualInputRequired": "Please fill in all fields yourself."
     },
+    "confirm": {
+      "title": "Send this resume",
+      "subtitle": "This is your completed resume. Please check it carefully.",
+      "question": "Is this OK? Shall we send it?",
+      "hint": "If something is wrong, tap \"Edit\".",
+      "send": "OK, send it",
+      "edit": "Edit",
+      "building": "Creating your resume...",
+      "failed": "We could not display your resume. Please contact your staff member.",
+      "openPdf": "Open the PDF in a new tab"
+    },
     "done": {
       "title": "Submitted successfully",
       "message": "Thank you! Our staff will review your information and finish your resume. You can close this page."
