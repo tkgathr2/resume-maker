@@ -10,7 +10,7 @@ from app.models import User
 from app.utils.jwt import decode_access_token
 
 # Re-exported for convenience.
-__all__ = ["get_db", "get_current_user"]
+__all__ = ["get_db", "get_current_user", "require_staff"]
 
 # auto_error=False so a *missing* Authorization header yields our own 401
 # (rather than HTTPBearer's default 403), matching the API spec.
@@ -53,3 +53,15 @@ def get_current_user(
         raise credentials_exc
 
     return user
+
+
+def require_staff(current_user: User = Depends(get_current_user)) -> User:
+    """Require the authenticated user to have a "staff" or "admin" role.
+
+    Used to gate the zairyu-card staff endpoints (view/verify/judge/export)
+    to staff+, per the design doc's role model. Raises 403 for the default
+    "job_seeker" role.
+    """
+    if current_user.role not in ("staff", "admin"):
+        raise HTTPException(status_code=403, detail="Forbidden: staff role required")
+    return current_user

@@ -1,7 +1,7 @@
 """Pydantic v2 request/response schemas."""
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional, Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -181,3 +181,153 @@ class AdminApplicantOut(BaseModel):
     email: Optional[str] = None
     status: str
     created_at: datetime
+
+
+# --------------------------------------------------------------------------- #
+# Zairyu Card (在留カード)
+#
+# Field names use camelCase aliases (unlike the rest of this file) to match
+# the literal JSON contract in the detail design doc
+# (resume-maker-zairyu-detail-design-v1.0.md section 4), since the frontend
+# is being implemented against that doc in parallel.
+# --------------------------------------------------------------------------- #
+_CARD_NUMBER_PATTERN = r"^[A-Z0-9]{16}$"
+_KANA_PATTERN = r"^[ァ-ヶーｦ-ﾟ\s]{1,50}$"
+_CODE_PATTERN = r"^\d{2}$"
+
+
+def _coerce_to_date(v: Any) -> Any:
+    if isinstance(v, datetime):
+        return v.date()
+    return v
+
+
+class ZairyuCardCreateOrUpdate(BaseModel):
+    """Request body for POST /api/zairyu/create-or-update (job seeker)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    card_number: str = Field(..., alias="cardNumber", pattern=_CARD_NUMBER_PATTERN)
+    cardholder_name_kana: str = Field(
+        ..., alias="cardholderNameKana", pattern=_KANA_PATTERN
+    )
+    validity_date: date = Field(..., alias="validityDate")
+    status_of_residence_code: str = Field(
+        ..., alias="statusOfResidenceCode", pattern=_CODE_PATTERN
+    )
+    activity_restriction: str = Field(
+        ..., alias="activityRestriction", pattern=_CODE_PATTERN
+    )
+    consent_given: bool = Field(..., alias="consentGiven")
+
+    @field_validator("validity_date")
+    @classmethod
+    def _no_past_date(cls, v: date) -> date:
+        if v < date.today():
+            raise ValueError("validityDate must not be in the past")
+        return v
+
+    @field_validator("consent_given")
+    @classmethod
+    def _consent_required(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("consentGiven must be true")
+        return v
+
+
+class ZairyuCardCreateOut(BaseModel):
+    """Response for POST /api/zairyu/create-or-update."""
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: int
+    user_id: int = Field(alias="jobSeekerId")
+    status_of_residence_jp: str = Field(alias="statusOfResidenceJp")
+    validity_date: date = Field(alias="validityDate")
+    is_verified: bool = Field(alias="isVerified")
+    can_work_in_japan: bool = Field(alias="canWorkInJapan")
+    created_at: datetime = Field(alias="createdAt")
+
+    @field_validator("validity_date", mode="before")
+    @classmethod
+    def _validity_date_to_date(cls, v: Any) -> Any:
+        return _coerce_to_date(v)
+
+
+class ZairyuAccessLogOut(BaseModel):
+    """One row of GET /api/zairyu/:cardId's accessLogs."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    timestamp: datetime
+    action: str
+    staff_name: Optional[str] = Field(default=None, alias="staffName")
+    ip_address: Optional[str] = Field(default=None, alias="ipAddress")
+
+
+class ZairyuCardDetailOut(BaseModel):
+    """Response for GET /api/zairyu/:cardId (staff+)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: int
+    job_seeker_id: int = Field(alias="jobSeekerId")
+    job_seeker_name: Optional[str] = Field(default=None, alias="jobSeekerName")
+    card_number: str = Field(alias="cardNumber")  # masked, e.g. "****8901"
+    cardholder_name_kana: str = Field(alias="cardholderNameKana")
+    validity_date: date = Field(alias="validityDate")
+    status_of_residence_jp: str = Field(alias="statusOfResidenceJp")
+    activity_restriction_jp: str = Field(alias="activityRestrictionJp")
+    is_verified: bool = Field(alias="isVerified")
+    verified_by: Optional[str] = Field(default=None, alias="verifiedBy")
+    verified_at: Optional[datetime] = Field(default=None, alias="verifiedAt")
+    verification_notes: Optional[str] = Field(default=None, alias="verificationNotes")
+    can_work_in_japan: bool = Field(alias="canWorkInJapan")
+    work_restriction_details: Optional[str] = Field(
+        default=None, alias="workRestrictionDetails"
+    )
+    access_logs: list[ZairyuAccessLogOut] = Field(
+        default_factory=list, alias="accessLogs"
+    )
+
+
+class ZairyuVerifyRequest(BaseModel):
+    """Request body for PATCH /api/zairyu/:cardId/verify (staff+)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    verification_notes: Optional[str] = Field(
+        default=None, alias="verificationNotes", max_length=2000
+    )
+
+
+class ZairyuVerifyOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: int
+    is_verified: bool = Field(alias="isVerified")
+    verified_at: datetime = Field(alias="verifiedAt")
+    verified_by: str = Field(alias="verifiedBy")
+    verification_notes: Optional[str] = Field(default=None, alias="verificationNotes")
+
+
+class ZairyuWorkEligibilityRequest(BaseModel):
+    """Request body for PATCH /api/zairyu/:cardId/set-work-eligibility (staff+)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    can_work_in_japan: bool = Field(..., alias="canWorkInJapan")
+    work_restriction_details: Optional[str] = Field(
+        default=None, alias="workRestrictionDetails", max_length=2000
+    )
+
+
+class ZairyuWorkEligibilityOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: int
+    can_work_in_japan: bool = Field(alias="canWorkInJapan")
+    work_restriction_details: Optional[str] = Field(
+        default=None, alias="workRestrictionDetails"
+    )
+    updated_at: datetime = Field(alias="updatedAt")

@@ -16,6 +16,7 @@
     "test:pdf": "tsx scripts/test-pdf.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.1",
     "@prisma/client": "^6.19.3",
     "@react-pdf/renderer": "^4.5.1",
     "axios": "^1.7.9",
@@ -24,7 +25,9 @@
     "pdfkit": "^0.14.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "swr": "^2.3.0"
+    "react-hook-form": "^7.54.0",
+    "swr": "^2.3.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
